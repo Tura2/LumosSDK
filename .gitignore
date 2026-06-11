@@ -1,0 +1,19 @@
+# Android
+*.iml
+.gradle/
+local.properties
+build/
+*.apk
+*.aab
+
+# Server
+server/build/
+server/.env
+
+# Portal
+portal/node_modules/
+portal/dist/
+
+# IDE
+.idea/
+.DS_Store
