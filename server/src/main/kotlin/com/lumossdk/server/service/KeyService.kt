@@ -34,7 +34,7 @@ object KeyService {
         ApiKeys.select { (ApiKeys.keyHash eq h) and (ApiKeys.revokedAt.isNull()) }
             .singleOrNull()
             ?.let { row ->
-                ApiKeys.update({ ApiKeys.keyHash eq h }) {
+                ApiKeys.update({ ApiKeys.id eq row[ApiKeys.id] }) {
                     it[lastUsedAt] = LocalDateTime.now()
                 }
                 row[ApiKeys.appId]

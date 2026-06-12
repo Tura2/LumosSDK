@@ -23,6 +23,8 @@ import java.util.UUID
 fun Routing.authRoutes() {
     post("/api/auth/register") {
         val req = call.receive<AuthRequest>()
+        val existing = transaction { Accounts.select { Accounts.email eq req.email }.count() }
+        if (existing > 0) return@post call.respond(HttpStatusCode.Conflict, "Email already registered")
         val accountId = UUID.randomUUID().toString()
         transaction {
             Accounts.insert {
