@@ -61,15 +61,17 @@ object IngestionService {
                     }
                     val isOk = p.status == "OK"
                     val isError = p.status == "ERROR"
-                    StatsHourly.upsert(StatsHourly.appId, StatsHourly.feature, StatsHourly.hourBucket) {
-                        it[StatsHourly.appId] = appId; it[StatsHourly.feature] = p.feature
-                        it[StatsHourly.hourBucket] = hourBucket
-                        it[tracesCount] = 1; it[okCount] = if (isOk) 1 else 0
-                        it[errorCount] = if (isError) 1 else 0
-                        it[tokensInSum] = (p.tokensIn ?: 0).toLong()
-                        it[tokensOutSum] = (p.tokensOut ?: 0).toLong()
-                        it[latencySum] = p.latencyMs ?: 0
-                    }
+                    incrementStats(
+                        appId = appId,
+                        feature = p.feature,
+                        hourBucket = hourBucket,
+                        traces = 1,
+                        ok = if (isOk) 1 else 0,
+                        errors = if (isError) 1 else 0,
+                        tokensIn = (p.tokensIn ?: 0).toLong(),
+                        tokensOut = (p.tokensOut ?: 0).toLong(),
+                        latency = p.latencyMs ?: 0L,
+                    )
                 }
                 "SPAN" -> {
                     val p = json.decodeFromString<SpanPayload>(env.payload)
@@ -87,14 +89,66 @@ object IngestionService {
                     val isUp = p.kind == "THUMBS_UP"
                     val traceRow = Traces.select { Traces.traceId eq p.traceId }.singleOrNull()
                     traceRow?.let { row ->
-                        StatsHourly.upsert(StatsHourly.appId, StatsHourly.feature, StatsHourly.hourBucket) {
-                            it[StatsHourly.appId] = appId; it[feature] = row[Traces.feature]
-                            it[StatsHourly.hourBucket] = hourBucket
-                            it[thumbsUp] = if (isUp) 1 else 0
-                            it[thumbsDown] = if (!isUp) 1 else 0
-                        }
+                        incrementStats(
+                            appId = appId,
+                            feature = row[Traces.feature],
+                            hourBucket = hourBucket,
+                            thumbsUp = if (isUp) 1 else 0,
+                            thumbsDown = if (!isUp) 1 else 0,
+                        )
                     }
                 }
+            }
+        }
+    }
+
+    private fun incrementStats(
+        appId: String,
+        feature: String,
+        hourBucket: LocalDateTime,
+        traces: Int = 0,
+        ok: Int = 0,
+        errors: Int = 0,
+        tokensIn: Long = 0L,
+        tokensOut: Long = 0L,
+        latency: Long = 0L,
+        thumbsUp: Int = 0,
+        thumbsDown: Int = 0,
+    ) {
+        val existing = StatsHourly.select {
+            (StatsHourly.appId eq appId) and
+            (StatsHourly.feature eq feature) and
+            (StatsHourly.hourBucket eq hourBucket)
+        }.singleOrNull()
+
+        if (existing == null) {
+            StatsHourly.insert {
+                it[StatsHourly.appId] = appId
+                it[StatsHourly.feature] = feature
+                it[StatsHourly.hourBucket] = hourBucket
+                it[tracesCount] = traces
+                it[okCount] = ok
+                it[errorCount] = errors
+                it[tokensInSum] = tokensIn
+                it[tokensOutSum] = tokensOut
+                it[latencySum] = latency
+                it[StatsHourly.thumbsUp] = thumbsUp
+                it[StatsHourly.thumbsDown] = thumbsDown
+            }
+        } else {
+            StatsHourly.update({
+                (StatsHourly.appId eq appId) and
+                (StatsHourly.feature eq feature) and
+                (StatsHourly.hourBucket eq hourBucket)
+            }) {
+                it[tracesCount] = existing[tracesCount] + traces
+                it[okCount] = existing[okCount] + ok
+                it[errorCount] = existing[errorCount] + errors
+                it[tokensInSum] = existing[tokensInSum] + tokensIn
+                it[tokensOutSum] = existing[tokensOutSum] + tokensOut
+                it[latencySum] = existing[latencySum] + latency
+                it[StatsHourly.thumbsUp] = existing[StatsHourly.thumbsUp] + thumbsUp
+                it[StatsHourly.thumbsDown] = existing[StatsHourly.thumbsDown] + thumbsDown
             }
         }
     }
