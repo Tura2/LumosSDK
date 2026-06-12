@@ -32,8 +32,8 @@ export default function TraceDetail() {
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
           <span style={{ background: '#0f0f1a', padding: '4px 10px', borderRadius: 6 }}>{trace.feature}</span>
           <span style={{ color: trace.status === 'OK' ? '#4caf50' : '#e94560' }}>{trace.status}</span>
-          {trace.latencyMs && <span>{trace.latencyMs}ms</span>}
-          {trace.tokensIn && <span>{trace.tokensIn + (trace.tokensOut ?? 0)} tokens</span>}
+          {trace.latencyMs != null && <span>{trace.latencyMs}ms</span>}
+          {trace.tokensIn != null && <span>{trace.tokensIn + (trace.tokensOut ?? 0)} tokens</span>}
           {trace.model && <span style={{ color: '#888', fontSize: 13 }}>{trace.model}</span>}
         </div>
         <div style={{ marginBottom: 12 }}>
