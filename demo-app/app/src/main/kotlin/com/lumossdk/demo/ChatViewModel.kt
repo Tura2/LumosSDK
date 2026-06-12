@@ -44,35 +44,38 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch {
             _messages.value = _messages.value + ChatMessage(role = "user", text = text)
             _loading.value = true
+            try {
+                val trace = AgentLens.startTrace("demo-chat")
+                trace.logPrompt(text)
 
-            val trace = AgentLens.startTrace("demo-chat")
-            trace.logPrompt(text)
-
-            val result = withContext(Dispatchers.IO) {
-                runCatching {
-                    val body = Json.encodeToString(DemoChatRequest.serializer(), DemoChatRequest(text))
-                    val req = Request.Builder().url("$SERVER/v0/demo/chat")
-                        .post(body.toRequestBody("application/json".toMediaType()))
-                        .build()
-                    val resp = http.newCall(req).execute()
-                    json.decodeFromString<DemoChatResponse>(resp.body!!.string())
+                val result = withContext(Dispatchers.IO) {
+                    runCatching {
+                        val body = Json.encodeToString(DemoChatRequest.serializer(), DemoChatRequest(text))
+                        val req = Request.Builder().url("$SERVER/v0/demo/chat")
+                            .post(body.toRequestBody("application/json".toMediaType()))
+                            .build()
+                        http.newCall(req).execute().use { resp ->
+                            json.decodeFromString<DemoChatResponse>(resp.body!!.string())
+                        }
+                    }
                 }
-            }
 
-            result.onSuccess { r ->
-                trace.logResponse(r.reply, r.model, r.tokensIn, r.tokensOut, r.latencyMs)
-                trace.end()
-                AgentLens.endTrace(trace)
-                _messages.value = _messages.value + ChatMessage(
-                    role = "ai", text = r.reply, traceId = trace.id
-                )
-            }.onFailure {
-                trace.logError(it)
-                trace.end()
-                AgentLens.endTrace(trace)
-                _messages.value = _messages.value + ChatMessage(role = "ai", text = "Error: ${it.message}")
+                result.onSuccess { r ->
+                    trace.logResponse(r.reply, r.model, r.tokensIn, r.tokensOut, r.latencyMs)
+                    trace.end()
+                    AgentLens.endTrace(trace)
+                    _messages.value = _messages.value + ChatMessage(
+                        role = "ai", text = r.reply, traceId = trace.id
+                    )
+                }.onFailure {
+                    trace.logError(it)
+                    trace.end()
+                    AgentLens.endTrace(trace)
+                    _messages.value = _messages.value + ChatMessage(role = "ai", text = "Error: ${it.message}")
+                }
+            } finally {
+                _loading.value = false
             }
-            _loading.value = false
         }
     }
 

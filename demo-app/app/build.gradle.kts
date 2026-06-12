@@ -17,7 +17,7 @@ android {
         val props = java.util.Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) {
-            props.load(localPropsFile.inputStream())
+            localPropsFile.inputStream().use { props.load(it) }
         }
         buildConfigField("String", "LUMOS_API_KEY", "\"${props.getProperty("LUMOS_API_KEY", "")}\"")
     }

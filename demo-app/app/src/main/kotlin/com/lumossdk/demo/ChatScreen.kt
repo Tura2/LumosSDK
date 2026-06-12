@@ -45,7 +45,10 @@ fun ChatScreen(vm: ChatViewModel) {
                 modifier = Modifier.weight(1f), placeholder = { Text("Ask anything...") }
             )
             Spacer(Modifier.width(8.dp))
-            Button(onClick = { if (input.isNotBlank()) { vm.send(input); input = "" } }) {
+            Button(
+                onClick = { if (input.isNotBlank()) { vm.send(input); input = "" } },
+                enabled = !loading
+            ) {
                 Text("Send")
             }
         }
