@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getMockResponse } from './mockData';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
 
@@ -9,3 +10,15 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+api.interceptors.response.use(
+  res => res,
+  err => {
+    const url = err.config?.url ?? '';
+    if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED' || !err.response) {
+      const mock = getMockResponse(url);
+      if (mock !== null) return Promise.resolve({ data: mock });
+    }
+    return Promise.reject(err);
+  }
+);
