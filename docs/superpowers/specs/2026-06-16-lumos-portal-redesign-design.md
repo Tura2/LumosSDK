@@ -92,8 +92,8 @@ Hover (inactive): `background: rgba(255,255,255,0.04)`, `color: #E8F2FF`
 ### Bottom section
 - `marginTop: auto`
 - User chip: `display: flex`, `alignItems: center`, `gap: 8px`, `padding: '10px 12px'`, `borderRadius: 10`, `background: rgba(255,255,255,0.04)`, `border: '1px solid #2E3D54'`
-  - Shows app name ("Demo App") in white `fontSize: 13` and email from `localStorage.getItem('lumos_email') ?? ''` in muted `fontSize: 11`
-  - `<User size={14} strokeWidth={1.5} color="#6A7D9A" />` icon
+  - Shows app name `"Demo App"` in white `fontSize: 13` (static — no new API calls or localStorage keys needed)
+  - `<User size={14} strokeWidth={1.5} color="#6A7D9A" />` icon on the left
 - Logout button: below chip, `background: none`, `border: none`, `color: #6A7D9A`, `fontSize: 13`, `cursor: pointer`, `padding: '8px 12px'`, hover `color: #FF4563`
 
 ---

@@ -10,7 +10,7 @@ interface TraceRow {
 }
 
 const PAGE_SIZE = 10;
-const COLS = '2fr 1fr 1fr 1.5fr';
+const COLS = '2fr 1fr 1fr 1fr 1.5fr';
 
 export default function TraceExplorer() {
   const [traces, setTraces]     = useState<TraceRow[]>([]);

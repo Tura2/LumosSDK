@@ -15,6 +15,7 @@ interface Stats {
 
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [statsError, setStatsError] = useState(false);
   const [appId, setAppId] = useState<string | null>(null);
 
   const hourlyData = useMemo(() =>
@@ -28,12 +29,13 @@ export default function Dashboard() {
       const id = r.data[0]?.id;
       if (id) {
         setAppId(id);
-        api.get(`/api/apps/${id}/stats`).then(r => setStats(r.data));
+        api.get(`/api/apps/${id}/stats`).then(r => setStats(r.data)).catch(() => setStatsError(true));
       }
     });
   }, []);
 
   if (!appId) return <p style={{ color: T.muted }}>No apps yet. Create an app first.</p>;
+  if (statsError) return <p style={{ color: T.red }}>Failed to load stats. Check your connection.</p>;
   if (!stats)  return <p style={{ color: T.muted }}>Loading...</p>;
 
   const thumbsTotal  = stats.thumbsUp + stats.thumbsDown;

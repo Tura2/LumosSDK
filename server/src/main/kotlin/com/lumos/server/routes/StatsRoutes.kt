@@ -1,17 +1,24 @@
 package com.lumos.server.routes
 
+import com.lumos.server.db.Apps
 import com.lumos.server.db.StatsHourly
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Routing.statsRoutes() {
     authenticate("jwt") {
         get("/api/apps/{appId}/stats") {
+            val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
+            val owns = transaction { Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0 }
+            if (!owns) return@get call.respond(HttpStatusCode.Forbidden)
             val stats = transaction {
                 StatsHourly.select { StatsHourly.appId eq appId }.fold(
                     mutableMapOf<String, Long>(

@@ -141,14 +141,16 @@ object IngestionService {
                 (StatsHourly.feature eq feature) and
                 (StatsHourly.hourBucket eq hourBucket)
             }) {
-                it[tracesCount] = existing[tracesCount] + traces
-                it[okCount] = existing[okCount] + ok
-                it[errorCount] = existing[errorCount] + errors
-                it[tokensInSum] = existing[tokensInSum] + tokensIn
-                it[tokensOutSum] = existing[tokensOutSum] + tokensOut
-                it[latencySum] = existing[latencySum] + latency
-                it[StatsHourly.thumbsUp] = existing[StatsHourly.thumbsUp] + thumbsUp
-                it[StatsHourly.thumbsDown] = existing[StatsHourly.thumbsDown] + thumbsDown
+                with(SqlExpressionBuilder) {
+                    it[tracesCount] = StatsHourly.tracesCount + traces
+                    it[okCount] = StatsHourly.okCount + ok
+                    it[errorCount] = StatsHourly.errorCount + errors
+                    it[tokensInSum] = StatsHourly.tokensInSum + tokensIn
+                    it[tokensOutSum] = StatsHourly.tokensOutSum + tokensOut
+                    it[latencySum] = StatsHourly.latencySum + latency
+                    it[StatsHourly.thumbsUp] = StatsHourly.thumbsUp + thumbsUp
+                    it[StatsHourly.thumbsDown] = StatsHourly.thumbsDown + thumbsDown
+                }
             }
         }
     }

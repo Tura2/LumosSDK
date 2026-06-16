@@ -555,7 +555,7 @@ body{font-family:var(--font-b);color:var(--text)}
       <div class="feat-card rev-r d8">
         <div class="feat-icon ic"><i data-lucide="cpu" style="width:36px;height:36px;color:var(--cyan)"></i></div>
         <div class="feat-title" data-i18n="s4.f6.t">Device Telemetry</div>
-        <div class="feat-body" data-i18n="s4.f6.b">OS version, device model, network type, app version — zero PII, no permissions needed.</div>
+        <div class="feat-body" data-i18n="s4.f6.b">OS version, device model, network type, app version — zero personal user details, no permissions needed.</div>
       </div>
     </div>
   </div>
@@ -654,7 +654,7 @@ trace.<span style="color:#00E887">end</span>(TraceStatus.OK)</pre>
           <div class="icon-b ip"><i data-lucide="cpu" style="width:32px;height:32px;color:#A290FF"></i></div>
           <div class="int-title" data-i18n="s6.c3.t">TelemetryCollector</div>
         </div>
-        <div class="int-body" data-i18n-html="s6.c3.b">Reads OS version, device model, network type from <code style="font-family:var(--font-c);color:#A290FF">Build</code>. Zero permissions. Zero PII.</div>
+        <div class="int-body" data-i18n-html="s6.c3.b">Reads OS version, device model, network type from <code style="font-family:var(--font-c);color:#A290FF">Build</code>. Zero permissions. Zero personal user details.</div>
         <span class="int-tag" data-i18n="s6.c3.tag" style="background:rgba(123,95,255,.08);color:#A290FF">No Permissions</span>
       </div>
 
@@ -1174,7 +1174,7 @@ const T = {
     's4.f3.t':'Span Tracking','s4.f3.b':'Record sub-steps within a trace — tool calls, RAG lookups, chain steps with precise durations.',
     's4.f4.t':'User Feedback','s4.f4.b':'Thumbs up / down ratings per conversation. Correlate satisfaction directly with model quality.',
     's4.f5.t':'Error &amp; Crash Capture','s4.f5.b':'logError() + uncaught exception hook. Flushes synchronously before the process terminates.',
-    's4.f6.t':'Device Telemetry','s4.f6.b':'OS version, device model, network type, app version — zero PII, no permissions needed.',
+    's4.f6.t':'Device Telemetry','s4.f6.b':'OS version, device model, network type, app version — zero personal user details, no permissions needed.',
     's5.tag':'Developer Interface','s5.h2':'Public <span class="hl">API Functions</span>',
     's5.cl':'Setup &amp; Tracing','s5.cr':'Feedback &amp; Control',
     's5.fn8':'Thumbs up / down per trace','s5.fn9':'Force-upload all pending events',
@@ -1183,7 +1183,7 @@ const T = {
     's6.tag':'SDK Internals','s6.h2':'Internal Library <span class="hl">Architecture</span>',
     's6.c1.t':'EventQueue','s6.c1.b':'Room (SQLite) <code style="font-family:var(--font-c);color:var(--cyan)">pending_events</code> table. Transactional writes survive crashes and process kills.','s6.c1.tag':'Room DB',
     's6.c2.t':'SessionManager','s6.c2.b':'Auto-rotates session IDs every 30 min of inactivity. Persisted in SharedPreferences across restarts.','s6.c2.tag':'SharedPrefs',
-    's6.c3.t':'TelemetryCollector','s6.c3.b':'Reads OS version, device model, network type from <code style="font-family:var(--font-c);color:#A290FF">Build</code>. Zero permissions. Zero PII.','s6.c3.tag':'No Permissions',
+    's6.c3.t':'TelemetryCollector','s6.c3.b':'Reads OS version, device model, network type from <code style="font-family:var(--font-c);color:#A290FF">Build</code>. Zero permissions. Zero personal user details.','s6.c3.tag':'No Permissions',
     's6.c4.t':'CrashInterceptor','s6.c4.b':'<code style="font-family:var(--font-c);color:var(--red);font-size:18px">Thread.defaultUncaughtExceptionHandler</code> — marks trace ERROR, flushes synchronously before process dies.','s6.c4.tag':'Synchronous Flush',
     's6.c5.t':'BatchUploader','s6.c5.b':'WorkManager periodic job. Groups 50 events, respects Doze mode &amp; App Standby, exponential backoff.','s6.c5.tag':'WorkManager',
     's6.c6.t':'GzipEncoder','s6.c6.b':'Compresses event batches before upload via OkHttp. ~80% size reduction — less data, less battery, faster uploads.','s6.c6.tag':'~80% compression',
@@ -1242,7 +1242,7 @@ const T = {
     's12.tag':'Technical Research','s12.h2':'Deep Dive: <span class="hl">Key Findings</span>',
     's12.r1.t':'Android Telemetry — What\'s Safe',
     's12.r1.i1':'<strong>Safe to collect:</strong> OS version, device model, network type (WiFi/Cell/None), app version — via Build class &amp; ConnectivityManager',
-    's12.r1.i2':'<strong style="color:var(--red)">Never collect:</strong> GPS, IMEI, contacts, camera — avoids PII and permission requirements',
+    's12.r1.i2':'<strong style="color:var(--red)">Never collect:</strong> GPS, IMEI, contacts, camera — avoids personal user details and permission requirements',
     's12.r1.i3':'Our telemetry set requires <strong>zero Android permissions</strong>',
     's12.r2.t':'Crash Capture Before App Closes',
     's12.r2.i1':'Hook: <code style="font-family:var(--font-c);color:var(--red);font-size:20px">Thread.defaultUncaughtExceptionHandler</code>',
@@ -1283,7 +1283,7 @@ const T = {
     's4.f3.t':'מעקב Spans','s4.f3.b':'תיעוד שלבי ביניים ב-Trace — קריאות כלים, חיפוש RAG, שלבי שרשרת עם משכים מדויקים.',
     's4.f4.t':'משוב משתמשים','s4.f4.b':'דירוג אגודל למעלה/למטה לכל שיחה. ניתוח קורלציה בין שביעות רצון לאיכות המודל.',
     's4.f5.t':'לכידת שגיאות וקריסות','s4.f5.b':'logError() + וו לחריגות לא תפוסות. שטיפה סינכרונית לפני סיום התהליך.',
-    's4.f6.t':'טלמטריית מכשיר','s4.f6.b':'גרסת OS, דגם מכשיר, סוג רשת, גרסת אפליקציה — אפס PII, ללא צורך בהרשאות.',
+    's4.f6.t':'טלמטריית מכשיר','s4.f6.b':'גרסת OS, דגם מכשיר, סוג רשת, גרסת אפליקציה — אפס פרטים אישיים של המשתמש, ללא צורך בהרשאות.',
     's5.tag':'ממשק המפתח','s5.h2':'פונקציות <span class="hl">API ציבוריות</span>',
     's5.cl':'הגדרה ומעקב','s5.cr':'משוב ושליטה',
     's5.fn8':'אגודל למעלה / למטה לכל Trace','s5.fn9':'העלאה כפויה של כל האירועים הממתינים',
@@ -1292,7 +1292,7 @@ const T = {
     's6.tag':'פנים ה-SDK','s6.h2':'ארכיטקטורת <span class="hl">הספרייה הפנימית</span>',
     's6.c1.t':'EventQueue','s6.c1.b':'טבלת Room (SQLite) <code style="font-family:var(--font-c);color:var(--cyan)">pending_events</code>. כתיבות טרנסקציה שורדות קריסות וסיום תהליכים.','s6.c1.tag':'Room DB',
     's6.c2.t':'SessionManager','s6.c2.b':'מחזיר ID סשן אוטומטית כל 30 דקות של חוסר פעילות. נשמר ב-SharedPreferences בין הפעלות.','s6.c2.tag':'SharedPrefs',
-    's6.c3.t':'TelemetryCollector','s6.c3.b':'קורא גרסת OS, דגם מכשיר, סוג רשת מ-<code style="font-family:var(--font-c);color:#A290FF">Build</code>. אפס הרשאות. אפס PII.','s6.c3.tag':'ללא הרשאות',
+    's6.c3.t':'TelemetryCollector','s6.c3.b':'קורא גרסת OS, דגם מכשיר, סוג רשת מ-<code style="font-family:var(--font-c);color:#A290FF">Build</code>. אפס הרשאות. אפס פרטים אישיים של המשתמש.','s6.c3.tag':'ללא הרשאות',
     's6.c4.t':'CrashInterceptor','s6.c4.b':'<code style="font-family:var(--font-c);color:var(--red);font-size:18px">Thread.defaultUncaughtExceptionHandler</code> — מסמן Trace כ-ERROR, שוטף סינכרונית לפני מוות התהליך.','s6.c4.tag':'שטיפה סינכרונית',
     's6.c5.t':'BatchUploader','s6.c5.b':'עבודה מחזורית של WorkManager. מקבץ 50 אירועים, מכבד Doze mode ו-App Standby, backoff מעריכי.','s6.c5.tag':'WorkManager',
     's6.c6.t':'GzipEncoder','s6.c6.b':'דחיסת אצוות אירועים לפני העלייה דרך OkHttp. ~80% הפחתת גודל — פחות נתונים, פחות סוללה, העלייה מהירה יותר.','s6.c6.tag':'~80% דחיסה',
@@ -1351,7 +1351,7 @@ const T = {
     's12.tag':'מחקר טכני','s12.h2':'צלילה עמוקה: <span class="hl">ממצאים מרכזיים</span>',
     's12.r1.t':'טלמטריית Android — מה בטוח',
     's12.r1.i1':'<strong>בטוח לאיסוף:</strong> גרסת OS, דגם מכשיר, סוג רשת (WiFi/Cell/ללא), גרסת אפליקציה — דרך Build ו-ConnectivityManager',
-    's12.r1.i2':'<strong style="color:var(--red)">אסור לאסוף:</strong> GPS, IMEI, אנשי קשר, מצלמה — נמנע מ-PII ודרישות הרשאה',
+    's12.r1.i2':'<strong style="color:var(--red)">אסור לאסוף:</strong> GPS, IMEI, אנשי קשר, מצלמה — נמנע מפרטים אישיים של המשתמש ודרישות הרשאה',
     's12.r1.i3':'סט הטלמטריה שלנו דורש <strong>אפס הרשאות Android</strong>',
     's12.r2.t':'לכידת קריסות לפני סגירת האפליקציה',
     's12.r2.i1':'וו: <code style="font-family:var(--font-c);color:var(--red);font-size:20px">Thread.defaultUncaughtExceptionHandler</code>',

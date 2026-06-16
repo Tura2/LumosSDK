@@ -36,8 +36,13 @@ object DemoService {
             }.toString())
         }
         val latency = System.currentTimeMillis() - start
+        if (!response.status.isSuccess()) {
+            throw IllegalStateException("OpenRouter error ${response.status.value}: ${response.body<String>()}")
+        }
         val body = response.body<JsonObject>()
-        val reply = body["choices"]!!.jsonArray[0].jsonObject["message"]!!.jsonObject["content"]!!.jsonPrimitive.content
+        val choices = body["choices"]?.jsonArray
+            ?: throw IllegalStateException("OpenRouter response missing 'choices'")
+        val reply = choices[0].jsonObject["message"]!!.jsonObject["content"]!!.jsonPrimitive.content
         val usage = body["usage"]?.jsonObject
         return DemoChatResponse(
             reply = reply,

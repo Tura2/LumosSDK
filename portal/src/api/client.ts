@@ -14,6 +14,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   res => res,
   err => {
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      localStorage.removeItem('lumos_token');
+      window.location.href = '/login';
+      return Promise.reject(err);
+    }
     const url = err.config?.url ?? '';
     if (err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED' || !err.response) {
       const mock = getMockResponse(url);
