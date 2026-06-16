@@ -17,6 +17,9 @@ fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
     DatabaseFactory.init()
+    val jwtSecret = environment.config.property("jwt.secret").getString()
+    val jwtIssuer = environment.config.property("jwt.issuer").getString()
+    val jwtAudience = environment.config.property("jwt.audience").getString()
     install(ContentNegotiation) { json() }
     install(CORS) {
         anyHost()
@@ -27,10 +30,7 @@ fun Application.module() {
     }
     install(Authentication) {
         jwt("jwt") {
-            val secret = environment.config.property("jwt.secret").getString()
-            val issuer = environment.config.property("jwt.issuer").getString()
-            val audience = environment.config.property("jwt.audience").getString()
-            verifier(JWT.require(Algorithm.HMAC256(secret)).withIssuer(issuer).withAudience(audience).build())
+            verifier(JWT.require(Algorithm.HMAC256(jwtSecret)).withIssuer(jwtIssuer).withAudience(jwtAudience).build())
             validate { cred ->
                 if (cred.payload.getClaim("accountId").asString() != null) JWTPrincipal(cred.payload) else null
             }
