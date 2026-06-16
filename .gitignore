@@ -20,3 +20,4 @@ portal/.vite/
 # IDE
 .idea/
 .DS_Store
+.playwright-mcp/
