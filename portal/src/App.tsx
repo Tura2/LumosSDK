@@ -10,9 +10,18 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('lumos_token');
   if (!token) return <Navigate to="/login" replace />;
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
       <NavBar />
-      <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>{children}</main>
+      <main style={{
+        marginLeft: 240,
+        flex: 1,
+        overflowY: 'auto',
+        padding: 32,
+        minHeight: '100vh',
+        background: '#040810',
+      }}>
+        {children}
+      </main>
     </div>
   );
 }
