@@ -1,4 +1,4 @@
-# AgentLens — Pre-meeting Research / מחקר מקדים
+# Lumos — Pre-meeting Research / מחקר מקדים
 
 Deep-dive research required before the approval meeting, per the course instructions.
 
@@ -26,7 +26,7 @@ generates its own random install UUID stored in app-private storage — resettab
 app-scoped, GDPR-friendlier. User identity only via the developer's explicit
 `setUser(pseudonymousId)`.
 
-**Relevance to AgentLens:** device model + network type explain latency outliers
+**Relevance to Lumos:** device model + network type explain latency outliers
 ("slow agent" may be a 2G connection); app version + prompt version are the axes of
 every dashboard comparison; battery/foreground state tune our upload scheduling.
 
@@ -44,7 +44,7 @@ and may itself be killed.
 1. `Thread.setDefaultUncaughtExceptionHandler` — our handler **writes the event to
    disk synchronously** (fast local I/O, milliseconds), then **delegates to the
    previous handler** so normal crash flow (dialog, Play reporting) still happens.
-2. On **next app launch**, `AgentLens.init()` finds the pending file/rows and enqueues
+2. On **next app launch**, `Lumos.init()` finds the pending file/rows and enqueues
    them for upload. Nothing is lost; it's just delayed.
 3. For non-fatal cases (app going to background, user swiping the app away):
    `ProcessLifecycleOwner` `ON_STOP` triggers an immediate flush via
@@ -58,7 +58,7 @@ and may itself be killed.
 - Respects **Doze mode & App Standby buckets** for us; a custom AlarmManager/Service
   approach would fight the OS and drain battery.
 
-**In AgentLens** this machinery serves two flows: (a) agent **errors** logged via
+**In Lumos** this machinery serves two flows: (a) agent **errors** logged via
 `trace.logError()` even if the app crashes mid-conversation, and (b) the regular
 event queue — every event is in Room *before* any network attempt, so a crash never
 loses data, only postpones it.

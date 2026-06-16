@@ -5,10 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "com.lumossdk.demo"
+    namespace = "com.lumos.demo"
     compileSdk = 34
     defaultConfig {
-        applicationId = "com.lumossdk.demo"
+        applicationId = "com.lumos.demo"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

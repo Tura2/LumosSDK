@@ -24,17 +24,17 @@ Android App
 
 | Function | Purpose |
 |---|---|
-| `AgentLens.init(context) { apiKey, serverUrl }` | Initialize once |
-| `AgentLens.startTrace(feature)` | Begin recording a conversation |
+| `Lumos.init(context) { apiKey, serverUrl }` | Initialize once |
+| `Lumos.startTrace(feature)` | Begin recording a conversation |
 | `trace.logPrompt(text)` | Record user message |
 | `trace.logResponse(text, model, tokensIn, tokensOut, latencyMs)` | Record AI reply + metrics |
 | `trace.startSpan(name)` / `span.end()` | Record a tool call |
 | `trace.logError(throwable)` | Record a failure |
 | `trace.end(status)` | Close trace — OK / ERROR / ABANDONED |
-| `AgentLens.feedback(traceId, Feedback)` | Attach ThumbsUp or ThumbsDown |
-| `AgentLens.flush()` | Force-send all queued events |
-| `AgentLens.shutdown()` | Clean shutdown |
-| `AgentLens.setListener(listener)` | Callbacks: onFlushSuccess, onFlushError |
+| `Lumos.feedback(traceId, Feedback)` | Attach ThumbsUp or ThumbsDown |
+| `Lumos.flush()` | Force-send all queued events |
+| `Lumos.shutdown()` | Clean shutdown |
+| `Lumos.setListener(listener)` | Callbacks: onFlushSuccess, onFlushError |
 
 ## Data model (key tables)
 

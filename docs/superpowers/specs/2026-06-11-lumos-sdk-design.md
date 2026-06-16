@@ -39,13 +39,13 @@ Android App (emulator / real device)
 
 ```kotlin
 // Once when app starts
-AgentLens.init(context) {
+Lumos.init(context) {
     apiKey = "lms_abc123..."
     serverUrl = "https://your-vps.com"
 }
 
 // Around every AI call
-val trace = AgentLens.startTrace("support-chat")
+val trace = Lumos.startTrace("support-chat")
 trace.logPrompt(userMessage)
 val reply = callMyAI(userMessage)
 trace.logResponse(
@@ -58,25 +58,25 @@ trace.logResponse(
 trace.end()
 
 // When user taps thumbs up or down
-AgentLens.feedback(trace.id, Feedback.ThumbsUp)
-AgentLens.feedback(trace.id, Feedback.ThumbsDown)
+Lumos.feedback(trace.id, Feedback.ThumbsUp)
+Lumos.feedback(trace.id, Feedback.ThumbsDown)
 ```
 
 ### Public API (6 functions — meets course requirement)
 
 | Function | What it does |
 |---|---|
-| `AgentLens.init(context) { ... }` | Initialize with API key and server URL |
-| `AgentLens.startTrace(feature)` | Begin recording a conversation, returns a Trace |
+| `Lumos.init(context) { ... }` | Initialize with API key and server URL |
+| `Lumos.startTrace(feature)` | Begin recording a conversation, returns a Trace |
 | `trace.logPrompt(text)` | Record the user's message |
 | `trace.logResponse(text, model, tokensIn, tokensOut, latencyMs)` | Record the AI reply + metrics |
 | `trace.startSpan(name)` / `span.end()` | Record a tool call or sub-step inside a trace |
 | `trace.logError(throwable)` | Record a failure inside a conversation |
 | `trace.end(status)` | Close the trace (OK / ERROR / ABANDONED) |
-| `AgentLens.feedback(traceId, Feedback)` | Attach ThumbsUp or ThumbsDown to a trace |
-| `AgentLens.flush()` | Force-send all queued events now (suspend) |
-| `AgentLens.shutdown()` | Clean shutdown |
-| `AgentLens.setListener(listener)` | Callbacks: onFlushSuccess, onFlushError |
+| `Lumos.feedback(traceId, Feedback)` | Attach ThumbsUp or ThumbsDown to a trace |
+| `Lumos.flush()` | Force-send all queued events now (suspend) |
+| `Lumos.shutdown()` | Clean shutdown |
+| `Lumos.setListener(listener)` | Callbacks: onFlushSuccess, onFlushError |
 
 ### How it works internally
 
@@ -251,7 +251,7 @@ A generic chat screen:
 | Lecturer requirement | How LumosSDK covers it |
 |---|---|
 | Kotlin SDK, init + API key, 4–6+ public functions | `init`, `startTrace`, `logPrompt`, `logResponse`, `feedback`, `flush` + more |
-| Callbacks + error handling, never throws | `AgentLensListener`, `SdkErrorGuard` |
+| Callbacks + error handling, never throws | `LumosListener`, `SdkErrorGuard` |
 | Real server + DB + auth | Ktor + SQLite on Oracle VPS, X-Lumos-Key auth |
 | Meaningful portal (changes behavior OR yields insight) | Dashboard + trace explorer = deep insight into AI quality |
 | Demo app | Compose chat app, OpenRouter, fully instrumented |

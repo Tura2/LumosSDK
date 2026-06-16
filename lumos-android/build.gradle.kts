@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lumossdk"
+    namespace = "com.lumos"
     compileSdk = 34
     defaultConfig {
         minSdk = 24

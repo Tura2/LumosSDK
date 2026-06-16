@@ -6,7 +6,7 @@ plugins {
     application
 }
 
-application { mainClass.set("com.lumossdk.server.ApplicationKt") }
+application { mainClass.set("com.lumos.server.ApplicationKt") }
 
 repositories { mavenCentral() }
 

@@ -12,20 +12,20 @@ Drop LumosSDK into your Android app. Every AI conversation — what the user ask
 
 ```kotlin
 // Initialize once in Application.onCreate()
-AgentLens.init(context) {
+Lumos.init(context) {
     apiKey = "lms_abc123..."
     serverUrl = "https://your-vps.com"
 }
 
 // Wrap every AI call
-val trace = AgentLens.startTrace("support-chat")
+val trace = Lumos.startTrace("support-chat")
 trace.logPrompt(userMessage)
 val reply = callMyAI(userMessage)
 trace.logResponse(reply, model = "gpt-4o-mini", tokensIn = 200, tokensOut = 80, latencyMs = 1200)
 trace.end()
 
 // User feedback
-AgentLens.feedback(trace.id, Feedback.ThumbsUp)
+Lumos.feedback(trace.id, Feedback.ThumbsUp)
 ```
 
 ### 2. Lumos Portal — web dashboard
