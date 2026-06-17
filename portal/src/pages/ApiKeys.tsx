@@ -56,8 +56,8 @@ export default function ApiKeys() {
           onClick={() => setShowForm(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            background: 'linear-gradient(135deg,#00D4FF,#7B5FFF)',
-            border: 'none', color: '#040810', fontWeight: 700,
+            background: T.grad,
+            border: 'none', color: T.bg, fontWeight: 700,
             padding: '10px 20px', borderRadius: 10, cursor: 'pointer',
             fontSize: 14, minHeight: 44, transition,
           }}
@@ -128,8 +128,8 @@ export default function ApiKeys() {
             <button
               onClick={createKey}
               style={{
-                background: 'linear-gradient(135deg,#00D4FF,#7B5FFF)',
-                border: 'none', color: '#040810', fontWeight: 700,
+                background: T.grad,
+                border: 'none', color: T.bg, fontWeight: 700,
                 padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 14,
               }}
             >

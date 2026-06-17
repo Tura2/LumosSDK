@@ -5,6 +5,7 @@ import TraceExplorer from './pages/TraceExplorer';
 import TraceDetail from './pages/TraceDetail';
 import ApiKeys from './pages/ApiKeys';
 import NavBar from './components/NavBar';
+import { T } from './theme';
 
 function PrivateLayout({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('lumos_token');
@@ -18,7 +19,7 @@ function PrivateLayout({ children }: { children: React.ReactNode }) {
         overflowY: 'auto',
         padding: 32,
         minHeight: '100vh',
-        background: '#040810',
+        background: T.bg,
       }}>
         {children}
       </main>

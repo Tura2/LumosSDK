@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { cardStyle, gradientText } from '../theme';
+import { T, cardStyle, gradientText } from '../theme';
 
 export default function StatsCard({ label, value, unit = '' }: {
   label: string; value: string | number; unit?: string;
@@ -22,13 +22,13 @@ export default function StatsCard({ label, value, unit = '' }: {
       <p style={{
         fontSize: 11, fontWeight: 600,
         letterSpacing: 1, textTransform: 'uppercase',
-        color: '#6A7D9A', margin: 0, marginBottom: 8,
+        color: T.muted, margin: 0, marginBottom: 8,
       }}>
         {label}
       </p>
       <p style={{ margin: 0, display: 'flex', alignItems: 'baseline', gap: 4 }}>
         <span style={{ fontSize: 32, fontWeight: 700, ...gradientText }}>{value}</span>
-        {unit && <span style={{ fontSize: 14, color: '#6A7D9A' }}>{unit}</span>}
+        {unit && <span style={{ fontSize: 14, color: T.muted }}>{unit}</span>}
       </p>
     </div>
   );
