@@ -1,5 +1,5 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Activity, Key, User, LogOut } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, Activity, Key } from 'lucide-react';
 import { T, gradientText, transition } from '../theme';
 
 const links = [
@@ -9,8 +9,6 @@ const links = [
 ];
 
 export default function NavBar() {
-  const nav = useNavigate();
-
   return (
     <nav style={{
       position: 'fixed', top: 0, left: 0,
@@ -18,73 +16,83 @@ export default function NavBar() {
       background: T.surface,
       borderRight: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
-      padding: '24px 16px',
-      gap: 4,
+      padding: '28px 16px 24px',
       zIndex: 100,
     }}>
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32, padding: '0 8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, padding: '0 8px' }}>
         <img
           src="/lumos-icon.png"
           width={36} height={36}
           alt="Lumos"
-          style={{ borderRadius: 10, objectFit: 'cover' }}
+          style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
         />
-        <span style={{ fontSize: 18, fontWeight: 700, ...gradientText }}>LumosSDK</span>
+        <span style={{
+          fontSize: 20, fontWeight: 700,
+          fontFamily: T.fontD,
+          letterSpacing: '-0.02em',
+          ...gradientText,
+        }}>
+          LumosSDK
+        </span>
       </div>
 
-      {/* Nav links */}
-      {links.map(l => (
-        <NavLink
-          key={l.to}
-          to={l.to}
-          end
-          style={({ isActive }) => ({
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 12px',
-            minHeight: 44,
-            borderRadius: 10,
-            fontSize: 14, fontWeight: 500,
-            textDecoration: 'none',
-            transition,
-            color:       isActive ? T.cyan  : T.muted,
-            background:  isActive ? 'rgba(0,212,255,0.08)' : 'transparent',
-            borderLeft:  isActive ? `2px solid ${T.cyan}` : '2px solid transparent',
-            paddingLeft: isActive ? 10 : 12,
-          })}
-        >
-          {l.icon}
-          {l.label}
-        </NavLink>
-      ))}
+      {/* Section label */}
+      <p style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: '0.12em',
+        textTransform: 'uppercase', color: T.muted,
+        padding: '0 8px', marginBottom: 8,
+        fontFamily: T.fontM,
+      }}>
+        Navigation
+      </p>
 
-      {/* Bottom section */}
-      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Nav links */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {links.map(l => (
+          <NavLink
+            key={l.to}
+            to={l.to}
+            end
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 12px',
+              minHeight: 44,
+              borderRadius: 10,
+              fontSize: 14, fontWeight: 500,
+              textDecoration: 'none',
+              transition,
+              color:      isActive ? T.cyan  : T.muted,
+              background: isActive ? 'rgba(0,212,255,0.08)' : 'transparent',
+              borderLeft: isActive ? `2px solid ${T.cyan}` : '2px solid transparent',
+              paddingLeft: isActive ? 10 : 12,
+            })}
+          >
+            {l.icon}
+            {l.label}
+          </NavLink>
+        ))}
+      </div>
+
+      {/* Bottom — app identity */}
+      <div style={{ marginTop: 'auto' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 12px', borderRadius: 10,
-          background: 'rgba(255,255,255,0.04)',
-          border: `1px solid ${T.border}`,
+          padding: '12px 14px', borderRadius: 12,
+          background: 'rgba(0,212,255,0.05)',
+          border: `1px solid rgba(0,212,255,0.12)`,
         }}>
-          <User size={14} strokeWidth={1.5} color={T.muted} />
-          <span style={{ fontSize: 13, color: T.text }}>Demo App</span>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: T.green,
+            boxShadow: `0 0 6px ${T.green}`,
+            flexShrink: 0,
+          }} />
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.2 }}>Demo App</p>
+            <p style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>Live · Mock data</p>
+          </div>
         </div>
-
-        <button
-          onClick={() => { localStorage.removeItem('lumos_token'); nav('/login'); }}
-          onMouseEnter={e => (e.currentTarget.style.color = T.red)}
-          onMouseLeave={e => (e.currentTarget.style.color = T.muted)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'none', border: 'none',
-            color: T.muted, fontSize: 13,
-            cursor: 'pointer', padding: '8px 12px',
-            borderRadius: 8, transition, width: '100%',
-          }}
-        >
-          <LogOut size={14} strokeWidth={1.5} />
-          Logout
-        </button>
       </div>
     </nav>
   );

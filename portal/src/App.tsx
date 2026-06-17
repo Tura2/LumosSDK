@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TraceExplorer from './pages/TraceExplorer';
 import TraceDetail from './pages/TraceDetail';
@@ -7,19 +6,18 @@ import ApiKeys from './pages/ApiKeys';
 import NavBar from './components/NavBar';
 import { T } from './theme';
 
-function PrivateLayout({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('lumos_token');
-  if (!token) return <Navigate to="/login" replace />;
+function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       <NavBar />
       <main style={{
         marginLeft: 240,
         flex: 1,
         overflowY: 'auto',
-        padding: 32,
+        padding: '32px 40px',
         minHeight: '100vh',
         background: T.bg,
+        width: 'calc(100% - 240px)',
       }}>
         {children}
       </main>
@@ -31,11 +29,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<PrivateLayout><Dashboard /></PrivateLayout>} />
-        <Route path="/traces" element={<PrivateLayout><TraceExplorer /></PrivateLayout>} />
-        <Route path="/traces/:traceId" element={<PrivateLayout><TraceDetail /></PrivateLayout>} />
-        <Route path="/keys" element={<PrivateLayout><ApiKeys /></PrivateLayout>} />
+        <Route path="/"                    element={<AppLayout><Dashboard /></AppLayout>} />
+        <Route path="/traces"              element={<AppLayout><TraceExplorer /></AppLayout>} />
+        <Route path="/traces/:traceId"     element={<AppLayout><TraceDetail /></AppLayout>} />
+        <Route path="/keys"                element={<AppLayout><ApiKeys /></AppLayout>} />
+        <Route path="*"                    element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
