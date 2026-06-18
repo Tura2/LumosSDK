@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -6,17 +6,27 @@ import {
 } from 'recharts';
 import {
   MessageSquare, CheckCircle2, Zap, Coins,
-  Activity, CheckCircle, XCircle, ThumbsUp, ThumbsDown,
+  Activity, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
 import { api } from '../api/client';
+import { useApps } from '../app/AppContext';
 import StatsCard from '../components/StatsCard';
+import StatusBadge from '../components/StatusBadge';
+import PageHeader from '../components/PageHeader';
 import { DashboardSkeleton } from '../components/Skeleton';
+import { formatTokens, formatDate } from '../lib/format';
 import { T, cardStyle, gradientText, transition } from '../theme';
+
+interface TrendWindow {
+  traces: number; ok: number; errors: number;
+  latencySum: number; tokensIn: number; tokensOut: number;
+}
 
 interface Stats {
   traces: number; ok: number; errors: number;
   tokensIn: number; tokensOut: number; latencySum: number;
   thumbsUp: number; thumbsDown: number;
+  trend?: { current: TrendWindow; previous: TrendWindow };
 }
 
 interface TraceRow {
@@ -24,52 +34,39 @@ interface TraceRow {
   model: string | null; latencyMs: number | null; startedAt: string;
 }
 
-function formatTokens(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-  return String(n);
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return isToday ? `Today ${time}` : d.toLocaleDateString();
-}
-
 export default function Dashboard() {
+  const { currentAppId } = useApps();
   const [stats, setStats]         = useState<Stats | null>(null);
   const [loading, setLoading]     = useState(true);
   const [recentTraces, setTraces] = useState<TraceRow[]>([]);
+  const [hourlyData, setHourlyData] = useState<{ hour: string; calls: number }[]>([]);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const nav = useNavigate();
 
-  const hourlyData = useMemo(() =>
-    Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i}h`,
-      calls: Math.floor(Math.random() * 80) + 10,
-    })), []);
-
   useEffect(() => {
-    api.get('/api/apps').then(r => {
-      const id = r.data[0]?.id;
-      if (!id) { setLoading(false); return; }
-      Promise.all([
-        api.get(`/api/apps/${id}/stats`),
-        api.get(`/api/apps/${id}/traces`),
-      ]).then(([statsRes, tracesRes]) => {
-        setStats(statsRes.data);
-        setTraces(tracesRes.data.slice(0, 5));
-      }).finally(() => setLoading(false));
-    }).catch(() => setLoading(false));
-  }, []);
+    if (!currentAppId) { setLoading(false); return; }
+    setLoading(true);
+    Promise.all([
+      api.get(`/api/apps/${currentAppId}/stats`),
+      api.get(`/api/apps/${currentAppId}/traces`),
+      api.get(`/api/apps/${currentAppId}/stats/hourly`),
+    ]).then(([statsRes, tracesRes, hourlyRes]) => {
+      setStats(statsRes.data);
+      setTraces(tracesRes.data.slice(0, 5));
+      setHourlyData(hourlyRes.data);
+    }).finally(() => setLoading(false));
+  }, [currentAppId]);
 
   if (loading) return <DashboardSkeleton />;
 
   if (!stats) return (
     <div>
-      <PageHeader />
+      <PageHeader
+        icon={<Activity size={16} color={T.cyan} strokeWidth={1.5} />}
+        title="Dashboard" subtitle="AI observability at a glance · real-time insights"
+        accent="#00D4FF"
+        titleGradient="linear-gradient(135deg, #E8F2FF 0%, #00D4FF 60%, #7B5FFF 100%)"
+      />
       <div style={{ ...cardStyle, padding: 48, textAlign: 'center', color: T.muted, fontSize: 14 }}>
         No app connected. Add an API key and send a trace to see data here.
       </div>
@@ -82,11 +79,36 @@ export default function Dashboard() {
   const avgLatency   = stats.traces  > 0 ? Math.round(stats.latencySum / stats.traces) : 0;
   const totalTokens  = stats.tokensIn + stats.tokensOut;
   const avgPerConv   = stats.traces  > 0 ? Math.round(totalTokens / stats.traces).toLocaleString() : '0';
+  const estCost      = ((stats.tokensIn / 1_000_000) * 5 + (stats.tokensOut / 1_000_000) * 15).toFixed(2);
+  const errorRate    = stats.traces  > 0 ? ((stats.errors / stats.traces) * 100).toFixed(1) : '0';
 
   const feedbackData = [
     { name: 'Positive', value: stats.thumbsUp },
     { name: 'Negative', value: stats.thumbsDown },
   ];
+
+  // WoW delta computation
+  const cur = stats.trend?.current;
+  const prev = stats.trend?.previous;
+
+  function pct(curr: number, before: number): string | undefined {
+    if (!before) return undefined;
+    const d = ((curr - before) / before) * 100;
+    const arrow = d >= 0 ? '↑' : '↓';
+    return `${arrow} ${Math.abs(d).toFixed(1)}% vs last week`;
+  }
+
+  const convTrend = cur && prev ? pct(cur.traces, prev.traces) : undefined;
+  const curSucc = cur && cur.traces ? (cur.ok / cur.traces) * 100 : 0;
+  const prevSucc = prev && prev.traces ? (prev.ok / prev.traces) * 100 : 0;
+  const succTrend = prev && prev.traces
+    ? `${curSucc - prevSucc >= 0 ? '↑' : '↓'} ${Math.abs(curSucc - prevSucc).toFixed(1)} pts vs last week`
+    : undefined;
+  const curLat = cur && cur.traces ? Math.round(cur.latencySum / cur.traces) : 0;
+  const prevLat = prev && prev.traces ? Math.round(prev.latencySum / prev.traces) : 0;
+  const latTrend = prev && prev.traces
+    ? `${curLat - prevLat <= 0 ? '↓' : '↑'} ${Math.abs(curLat - prevLat)}ms vs last week`
+    : undefined;
 
   const tooltipStyle = {
     contentStyle: {
@@ -100,7 +122,12 @@ export default function Dashboard() {
 
   return (
     <div>
-      <PageHeader />
+      <PageHeader
+        icon={<Activity size={16} color={T.cyan} strokeWidth={1.5} />}
+        title="Dashboard" subtitle="AI observability at a glance · real-time insights"
+        accent="#00D4FF"
+        titleGradient="linear-gradient(135deg, #E8F2FF 0%, #00D4FF 60%, #7B5FFF 100%)"
+      />
 
       {/* KPI row */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
@@ -108,7 +135,7 @@ export default function Dashboard() {
           label="Total Conversations"
           value={stats.traces.toLocaleString()}
           valueColor={T.cyan}
-          trend={`↑ 12% vs last week`}
+          trend={convTrend}
           icon={<MessageSquare size={14} strokeWidth={1.5} />}
         />
         <StatsCard
@@ -116,7 +143,7 @@ export default function Dashboard() {
           value={successRate}
           unit="%"
           valueColor={T.green}
-          trend={`↑ 2.1% vs last week`}
+          trend={succTrend}
           icon={<CheckCircle2 size={14} strokeWidth={1.5} />}
         />
         <StatsCard
@@ -124,7 +151,7 @@ export default function Dashboard() {
           value={avgLatency}
           unit="ms"
           valueColor={T.text}
-          trend={`↓ 18ms improvement`}
+          trend={latTrend}
           icon={<Zap size={14} strokeWidth={1.5} />}
         />
         <StatsCard
@@ -134,6 +161,29 @@ export default function Dashboard() {
           trend={`avg ${avgPerConv} per conv.`}
           icon={<Coins size={14} strokeWidth={1.5} />}
         />
+      </div>
+
+      {/* Secondary metrics row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Errors',        value: stats.errors.toString(), sub: `${errorRate}% error rate`,               color: T.red   },
+          { label: 'Est. Cost',     value: `$${estCost}`,           sub: `based on ${formatTokens(totalTokens)} tokens`, color: T.green },
+          { label: 'User Score',    value: `${thumbsRatio}%`,       sub: `${stats.thumbsUp} pos · ${stats.thumbsDown} neg`, color: T.amber },
+        ].map(({ label, value, sub, color }) => (
+          <div key={label} style={{ ...cardStyle, padding: '16px 22px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+              background: `linear-gradient(90deg, ${color}, transparent)`,
+            }} />
+            <p style={{ fontSize: 10, color: T.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontM }}>
+              {label}
+            </p>
+            <span style={{ fontSize: 30, fontWeight: 700, fontFamily: T.fontD, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
+              {value}
+            </span>
+            <p style={{ fontSize: 11, color: T.muted, marginTop: 6, fontFamily: T.fontM }}>{sub}</p>
+          </div>
+        ))}
       </div>
 
       {/* Chart row */}
@@ -229,6 +279,7 @@ export default function Dashboard() {
           {/* Header */}
           <div style={{
             display: 'grid', gridTemplateColumns: TRACE_COLS,
+            columnGap: 20,
             padding: '10px 20px',
             borderBottom: `1px solid ${T.border}`,
           }}>
@@ -251,6 +302,7 @@ export default function Dashboard() {
               onMouseLeave={() => setHoveredRow(null)}
               style={{
                 display: 'grid', gridTemplateColumns: TRACE_COLS,
+                columnGap: 20,
                 padding: '14px 20px',
                 borderBottom: idx < recentTraces.length - 1 ? `1px solid rgba(46,61,84,0.4)` : 'none',
                 cursor: 'pointer', transition,
@@ -273,17 +325,7 @@ export default function Dashboard() {
                 </span>
               </div>
 
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: t.status === 'OK' ? 'rgba(0,232,135,0.12)' : 'rgba(255,69,99,0.12)',
-                border: `1px solid ${t.status === 'OK' ? 'rgba(0,232,135,0.25)' : 'rgba(255,69,99,0.25)'}`,
-                borderRadius: 100, padding: '3px 10px',
-                color: t.status === 'OK' ? T.green : T.red,
-                fontSize: 12, width: 'fit-content',
-              }}>
-                {t.status === 'OK' ? <CheckCircle size={11} /> : <XCircle size={11} />}
-                {t.status}
-              </span>
+              <StatusBadge status={t.status} />
 
               <span style={{ fontSize: 12, color: T.muted, fontFamily: T.fontM }}>
                 {t.model ?? '—'}
@@ -300,38 +342,6 @@ export default function Dashboard() {
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function PageHeader() {
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10,
-          background: 'rgba(0,212,255,0.08)',
-          border: '1px solid rgba(0,212,255,0.18)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <Activity size={16} color={T.cyan} strokeWidth={1.5} />
-        </div>
-        <h1 style={{
-          fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em',
-          fontFamily: T.fontD,
-          background: 'linear-gradient(135deg, #E8F2FF 0%, #00D4FF 60%, #7B5FFF 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          lineHeight: 1.1,
-        }}>
-          Dashboard
-        </h1>
-      </div>
-      <p style={{ color: T.muted, fontSize: 14, paddingLeft: 48 }}>
-        AI observability at a glance · real-time insights
-      </p>
     </div>
   );
 }
