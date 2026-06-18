@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Plus, X, Copy, Check, Key } from 'lucide-react';
 import { api } from '../api/client';
 import { T, cardStyle, transition } from '../theme';
+import { useApps } from '../app/AppContext';
+import PageHeader from '../components/PageHeader';
 
 interface KeyRow {
   id: string; name: string; createdAt: string;
@@ -9,8 +11,9 @@ interface KeyRow {
 }
 
 export default function ApiKeys() {
+  const { currentAppId } = useApps();
   const [keys, setKeys]           = useState<KeyRow[]>([]);
-  const [appId, setAppId]         = useState<string | null>(null);
+  const [loading, setLoading]     = useState(true);
   const [newSecret, setNewSecret] = useState<string | null>(null);
   const [keyName, setKeyName]     = useState('');
   const [showForm, setShowForm]   = useState(false);
@@ -21,23 +24,22 @@ export default function ApiKeys() {
     api.get(`/api/apps/${id}/keys`).then(r => setKeys(r.data));
 
   useEffect(() => {
-    api.get('/api/apps').then(r => {
-      const id = r.data[0]?.id;
-      if (id) { setAppId(id); loadKeys(id); }
-    });
-  }, []);
+    if (!currentAppId) { setLoading(false); return; }
+    setLoading(true);
+    loadKeys(currentAppId).finally(() => setLoading(false));
+  }, [currentAppId]);
 
   async function createKey() {
-    if (!appId || !keyName.trim()) return;
-    const res = await api.post(`/api/apps/${appId}/keys`, { name: keyName });
+    if (!currentAppId || !keyName.trim()) return;
+    const res = await api.post(`/api/apps/${currentAppId}/keys`, { name: keyName });
     setNewSecret(res.data.secret);
     setKeyName(''); setShowForm(false);
-    loadKeys(appId);
+    loadKeys(currentAppId);
   }
 
   async function revoke(keyId: string) {
     await api.delete(`/api/keys/${keyId}`);
-    if (appId) loadKeys(appId);
+    if (currentAppId) loadKeys(currentAppId);
   }
 
   function copySecret() {
@@ -50,34 +52,13 @@ export default function ApiKeys() {
   return (
     <div>
       {/* Page header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(255,184,0,0.1)',
-              border: '1px solid rgba(255,184,0,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <Key size={16} color={T.amber} strokeWidth={1.5} />
-            </div>
-            <h1 style={{
-              fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em',
-              fontFamily: T.fontD,
-              background: 'linear-gradient(135deg, #E8F2FF 0%, #FFB800 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              lineHeight: 1.1,
-            }}>
-              API Keys
-            </h1>
-          </div>
-          <p style={{ color: T.muted, fontSize: 14, paddingLeft: 48 }}>
-            Manage authentication keys for your app
-          </p>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <PageHeader
+          icon={<Key size={16} color={T.amber} strokeWidth={1.5} />}
+          title="API Keys" subtitle="Manage authentication keys for your app"
+          accent="#FFB800"
+          titleGradient="linear-gradient(135deg, #E8F2FF 0%, #FFB800 100%)"
+        />
 
         <button
           onClick={() => setShowForm(true)}
@@ -225,6 +206,13 @@ export default function ApiKeys() {
           </div>
         ))}
       </div>
+
+      {/* Empty state */}
+      {!loading && keys.length === 0 && (
+        <div style={{ ...cardStyle, padding: 48, textAlign: 'center', color: T.muted, fontSize: 14 }}>
+          No API keys yet. Create one to connect your app.
+        </div>
+      )}
     </div>
   );
 }
