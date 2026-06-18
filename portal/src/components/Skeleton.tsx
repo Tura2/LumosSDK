@@ -1,6 +1,6 @@
 import { T, cardStyle, skeletonStyle } from '../theme';
 
-function Bone({ width = '100%', height = 16, radius = 6 }: {
+export function Bone({ width = '100%', height = 16, radius = 6 }: {
   width?: string | number; height?: number; radius?: number;
 }) {
   return <div style={{ ...skeletonStyle, width, height, borderRadius: radius }} />;

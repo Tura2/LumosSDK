@@ -14,7 +14,6 @@ export const T = {
   amber:   '#FFB800',
   red:     '#FF4563',
   grad:    'linear-gradient(135deg, #00D4FF 0%, #7B5FFF 100%)',
-  grad2:   'linear-gradient(135deg, #7B5FFF 0%, #FF4563 100%)',
   fontD:   "'Clash Display', sans-serif",
   fontM:   "'JetBrains Mono', monospace",
 } as const;
@@ -22,12 +21,6 @@ export const T = {
 export const cardStyle: React.CSSProperties = {
   background:   T.card,
   border:       `1px solid ${T.border}`,
-  borderRadius: 18,
-};
-
-export const cardGlow: React.CSSProperties = {
-  background:   'linear-gradient(135deg, rgba(0,212,255,0.07), rgba(123,95,255,0.04))',
-  border:       '1px solid rgba(0,212,255,0.18)',
   borderRadius: 18,
 };
 
