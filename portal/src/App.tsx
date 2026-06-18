@@ -13,8 +13,15 @@ import { AppProvider, useApps } from './app/AppContext';
 import { T } from './theme';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-  const { apps, loading } = useApps();
+  const { apps, loading, error } = useApps();
   if (loading) return <div style={{ minHeight: '100vh', background: T.bg }} />;
+  if (error && apps.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', width: '100%', background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#ef4444', fontSize: 16 }}>{error}</p>
+      </div>
+    );
+  }
   if (apps.length === 0) {
     return (
       <div style={{ minHeight: '100vh', width: '100%', background: T.bg }}>

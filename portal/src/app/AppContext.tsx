@@ -8,6 +8,7 @@ interface AppsValue {
   currentApp: App | null;
   currentAppId: string | null;
   loading: boolean;
+  error: string | null;
   setCurrentAppId: (id: string) => void;
   refresh: () => Promise<void>;
 }
@@ -20,6 +21,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     () => localStorage.getItem('lumos_current_app'),
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   function setCurrentAppId(id: string) {
     localStorage.setItem('lumos_current_app', id);
@@ -39,13 +41,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    refresh().finally(() => setLoading(false));
+    (async () => {
+      try {
+        await refresh();
+      } catch {
+        setError('Failed to load apps. Please refresh.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const currentApp = apps.find(a => a.id === currentAppId) ?? null;
 
   return (
-    <AppsCtx.Provider value={{ apps, currentApp, currentAppId, loading, setCurrentAppId, refresh }}>
+    <AppsCtx.Provider value={{ apps, currentApp, currentAppId, loading, error, setCurrentAppId, refresh }}>
       {children}
     </AppsCtx.Provider>
   );
