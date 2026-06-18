@@ -2,11 +2,18 @@ package com.lumos.server.service
 
 import com.lumos.server.db.ApiKeys
 import com.lumos.server.db.Apps
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.util.UUID
+
+@Serializable
+data class KeyDto(
+    val id: String, val name: String, val createdAt: String,
+    val lastUsedAt: String? = null, val revoked: Boolean,
+)
 
 object KeyService {
     fun hash(key: String): String {
@@ -47,14 +54,14 @@ object KeyService {
         } > 0
     }
 
-    fun listForApp(appId: String): List<Map<String, Any?>> = transaction {
+    fun listForApp(appId: String): List<KeyDto> = transaction {
         ApiKeys.select { ApiKeys.appId eq appId }.map { row ->
-            mapOf(
-                "id" to row[ApiKeys.id],
-                "name" to row[ApiKeys.name],
-                "createdAt" to row[ApiKeys.createdAt].toString(),
-                "lastUsedAt" to row[ApiKeys.lastUsedAt]?.toString(),
-                "revoked" to (row[ApiKeys.revokedAt] != null),
+            KeyDto(
+                id = row[ApiKeys.id],
+                name = row[ApiKeys.name],
+                createdAt = row[ApiKeys.createdAt].toString(),
+                lastUsedAt = row[ApiKeys.lastUsedAt]?.toString(),
+                revoked = row[ApiKeys.revokedAt] != null,
             )
         }
     }

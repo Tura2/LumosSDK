@@ -7,10 +7,41 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+
+@Serializable
+data class DeviceDto(
+    val deviceModel: String,
+    val androidVersion: Int? = null,
+    val sdkVersion: String? = null,
+    val appVersion: String? = null,
+)
+
+@Serializable
+data class TraceListItem(
+    val traceId: String, val feature: String, val status: String,
+    val model: String? = null, val latencyMs: Long? = null,
+    val tokensIn: Int? = null, val tokensOut: Int? = null,
+    val startedAt: String, val device: DeviceDto? = null,
+)
+
+@Serializable data class SpanDto(val name: String, val durationMs: Long)
+
+@Serializable
+data class TraceDetailDto(
+    val traceId: String, val feature: String, val status: String,
+    val input: String, val output: String? = null, val model: String? = null,
+    val tokensIn: Int? = null, val tokensOut: Int? = null, val latencyMs: Long? = null,
+    val startedAt: String, val spans: List<SpanDto>, val feedback: List<String>,
+    val device: DeviceDto? = null,
+)
+
+private fun deviceOf(model: String?, android: Int?, sdk: String?, appVer: String?): DeviceDto? =
+    if (model == null) null else DeviceDto(model, android, sdk, appVer)
 
 fun Routing.traceRoutes() {
     authenticate("jwt") {
@@ -23,14 +54,19 @@ fun Routing.traceRoutes() {
                 Traces.select { Traces.appId eq appId }
                     .orderBy(Traces.startedAt, SortOrder.DESC)
                     .limit(50).map {
-                        mapOf(
-                            "traceId" to it[Traces.traceId],
-                            "feature" to it[Traces.feature],
-                            "status" to it[Traces.status],
-                            "latencyMs" to it[Traces.latencyMs],
-                            "tokensIn" to it[Traces.tokensIn],
-                            "tokensOut" to it[Traces.tokensOut],
-                            "startedAt" to it[Traces.startedAt].toString(),
+                        TraceListItem(
+                            traceId = it[Traces.traceId],
+                            feature = it[Traces.feature],
+                            status = it[Traces.status],
+                            model = it[Traces.model],
+                            latencyMs = it[Traces.latencyMs],
+                            tokensIn = it[Traces.tokensIn],
+                            tokensOut = it[Traces.tokensOut],
+                            startedAt = it[Traces.startedAt].toString(),
+                            device = deviceOf(
+                                it[Traces.deviceModel], it[Traces.androidVersion],
+                                it[Traces.sdkVersion], it[Traces.appVersion],
+                            ),
                         )
                     }
             }
@@ -45,22 +81,26 @@ fun Routing.traceRoutes() {
                     .select { (Traces.traceId eq traceId) and (Apps.accountId eq accountId) }
                     .singleOrNull()?.let { row ->
                         val spans = Spans.select { Spans.traceId eq traceId }
-                            .map { mapOf("name" to it[Spans.name], "durationMs" to it[Spans.durationMs]) }
+                            .map { SpanDto(it[Spans.name], it[Spans.durationMs]) }
                         val feedback = FeedbackTable.select { FeedbackTable.traceId eq traceId }
                             .map { it[FeedbackTable.kind] }
-                        mapOf(
-                            "traceId" to row[Traces.traceId],
-                            "feature" to row[Traces.feature],
-                            "input" to row[Traces.input],
-                            "output" to row[Traces.output],
-                            "model" to row[Traces.model],
-                            "tokensIn" to row[Traces.tokensIn],
-                            "tokensOut" to row[Traces.tokensOut],
-                            "latencyMs" to row[Traces.latencyMs],
-                            "status" to row[Traces.status],
-                            "startedAt" to row[Traces.startedAt].toString(),
-                            "spans" to spans,
-                            "feedback" to feedback,
+                        TraceDetailDto(
+                            traceId = row[Traces.traceId],
+                            feature = row[Traces.feature],
+                            status = row[Traces.status],
+                            input = row[Traces.input],
+                            output = row[Traces.output],
+                            model = row[Traces.model],
+                            tokensIn = row[Traces.tokensIn],
+                            tokensOut = row[Traces.tokensOut],
+                            latencyMs = row[Traces.latencyMs],
+                            startedAt = row[Traces.startedAt].toString(),
+                            spans = spans,
+                            feedback = feedback,
+                            device = deviceOf(
+                                row[Traces.deviceModel], row[Traces.androidVersion],
+                                row[Traces.sdkVersion], row[Traces.appVersion],
+                            ),
                         )
                     }
             } ?: return@get call.respond(HttpStatusCode.NotFound)
