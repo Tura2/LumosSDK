@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CheckCircle, XCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ChevronLeft, ThumbsUp, ThumbsDown, Smartphone } from 'lucide-react';
 import { api } from '../api/client';
-import { T, cardStyle, skeletonStyle, transition } from '../theme';
+import { T, cardStyle, transition } from '../theme';
+import { Bone } from '../components/Skeleton';
+import StatusBadge from '../components/StatusBadge';
+import { androidOsLabel } from '../lib/format';
+
+interface DeviceInfo {
+  deviceModel: string; androidVersion: number; sdkVersion: string; appVersion: string;
+}
 
 interface TraceDetailData {
   traceId: string; feature: string; status: string;
@@ -11,10 +18,35 @@ interface TraceDetailData {
   startedAt: string;
   spans: { name: string; durationMs: number }[];
   feedback: string[];
+  device?: DeviceInfo;
 }
 
-function Bone({ width = '100%', height = 16 }: { width?: string | number; height?: number }) {
-  return <div style={{ ...skeletonStyle, width, height, borderRadius: 6 }} />;
+function FeedbackPill({ f }: { f: string }) {
+  const [hovered, setHovered] = useState(false);
+  const isUp = f === 'THUMBS_UP';
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        background: isUp
+          ? hovered ? 'rgba(0,232,135,0.22)' : 'rgba(0,232,135,0.12)'
+          : hovered ? 'rgba(255,69,99,0.22)'  : 'rgba(255,69,99,0.12)',
+        border: `1px solid ${isUp
+          ? hovered ? 'rgba(0,232,135,0.5)' : 'rgba(0,232,135,0.25)'
+          : hovered ? 'rgba(255,69,99,0.5)'  : 'rgba(255,69,99,0.25)'}`,
+        borderRadius: 12, padding: '12px 22px',
+        fontSize: 14, color: isUp ? T.green : T.red,
+        fontWeight: 500, cursor: 'default',
+        transition,
+        transform: hovered ? 'scale(1.03)' : 'scale(1)',
+      }}
+    >
+      {isUp ? <ThumbsUp size={18} /> : <ThumbsDown size={18} />}
+      {isUp ? 'Positive' : 'Negative'}
+    </div>
+  );
 }
 
 export default function TraceDetail() {
@@ -32,7 +64,7 @@ export default function TraceDetail() {
   }, [traceId]);
 
   if (loading) return (
-    <div style={{ maxWidth: 820 }}>
+    <div>
       <div style={{ marginBottom: 20 }}><Bone width={120} height={14} /></div>
       <div style={{ ...cardStyle, padding: 24, marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
@@ -40,7 +72,11 @@ export default function TraceDetail() {
         </div>
         <Bone height={2} />
         <div style={{ marginTop: 20 }}><Bone height={80} /></div>
-        <div style={{ marginTop: 16 }}><Bone height={120} /></div>
+        <div style={{ marginTop: 16 }}><Bone height={140} /></div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 16 }}>
+        <div style={{ ...cardStyle, padding: 24 }}><Bone height={120} /></div>
+        <div style={{ ...cardStyle, padding: 24 }}><Bone height={120} /></div>
       </div>
     </div>
   );
@@ -48,11 +84,9 @@ export default function TraceDetail() {
   if (!trace) return <p style={{ color: T.muted }}>Trace not found.</p>;
 
   const totalDuration = trace.spans.reduce((a, s) => a + s.durationMs, 0);
-  const isOK = trace.status === 'OK';
 
   return (
-    <div style={{ maxWidth: 820 }}>
-
+    <div>
       {/* Back */}
       <button
         onClick={() => nav('/traces')}
@@ -70,7 +104,7 @@ export default function TraceDetail() {
         Back to Traces
       </button>
 
-      {/* Header card */}
+      {/* Header card — full width */}
       <div style={{ ...cardStyle, padding: 28, marginBottom: 16 }}>
         {/* Badges row */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22, alignItems: 'center' }}>
@@ -83,16 +117,7 @@ export default function TraceDetail() {
             {trace.feature}
           </span>
 
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            background: isOK ? 'rgba(0,232,135,0.12)' : 'rgba(255,69,99,0.12)',
-            border: `1px solid ${isOK ? 'rgba(0,232,135,0.25)' : 'rgba(255,69,99,0.25)'}`,
-            borderRadius: 100, padding: '4px 10px',
-            color: isOK ? T.green : T.red, fontSize: 12,
-          }}>
-            {isOK ? <CheckCircle size={12} /> : <XCircle size={12} />}
-            {trace.status}
-          </span>
+          <StatusBadge status={trace.status} size={12} />
 
           {trace.model && (
             <span style={{
@@ -131,6 +156,7 @@ export default function TraceDetail() {
             background: T.bg, border: `1px solid ${T.border}`,
             borderRadius: 12, padding: '14px 18px',
             fontSize: 14, lineHeight: 1.65, color: T.text, marginBottom: 18,
+            maxWidth: 800,
           }}>
             {trace.input}
           </div>
@@ -149,6 +175,8 @@ export default function TraceDetail() {
                 border: `1px solid ${T.border}`,
                 borderRadius: 12, padding: '14px 18px',
                 fontSize: 14, lineHeight: 1.65, color: T.text,
+                maxWidth: 800,
+                whiteSpace: 'pre-wrap',
               }}>
                 {trace.output}
               </div>
@@ -157,63 +185,96 @@ export default function TraceDetail() {
         </div>
       </div>
 
-      {/* Spans */}
-      {trace.spans.length > 0 && (
-        <div style={{ ...cardStyle, padding: 24, marginBottom: 16 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 18, fontFamily: T.fontD, letterSpacing: '-0.01em' }}>
-            Execution Spans
-          </p>
-          {trace.spans.map((s, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              marginBottom: i < trace.spans.length - 1 ? 12 : 0,
-            }}>
-              <span style={{ fontSize: 12, color: T.muted, minWidth: 150, fontFamily: T.fontM }}>
-                {s.name}
-              </span>
-              <div style={{ flex: 1, height: 6, background: 'rgba(46,61,84,0.5)', borderRadius: 3 }}>
-                <div style={{
-                  width: `${totalDuration > 0 ? (s.durationMs / totalDuration) * 100 : 100}%`,
-                  height: 6,
-                  background: 'linear-gradient(90deg, #00D4FF, #7B5FFF)',
-                  borderRadius: 3,
-                }} />
-              </div>
-              <span style={{ fontSize: 12, color: T.text, minWidth: 52, textAlign: 'right', fontFamily: T.fontM }}>
-                {s.durationMs}ms
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Feedback */}
-      <div style={{ ...cardStyle, padding: 24 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 16, fontFamily: T.fontD, letterSpacing: '-0.01em' }}>
-          Feedback
-        </p>
-        {trace.feedback.length === 0 ? (
-          <p style={{ color: T.muted, fontSize: 13, fontFamily: T.fontM }}>No feedback recorded</p>
-        ) : (
-          <div style={{ display: 'flex', gap: 12 }}>
-            {trace.feedback.map((f, i) => {
-              const isUp = f === 'THUMBS_UP';
-              return (
-                <span key={i} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  background: isUp ? 'rgba(0,232,135,0.12)' : 'rgba(255,69,99,0.12)',
-                  border: `1px solid ${isUp ? 'rgba(0,232,135,0.25)' : 'rgba(255,69,99,0.25)'}`,
-                  borderRadius: 12, padding: '12px 22px',
-                  fontSize: 14, color: isUp ? T.green : T.red,
-                  fontWeight: 500,
-                }}>
-                  {isUp ? <ThumbsUp size={18} /> : <ThumbsDown size={18} />}
-                  {isUp ? 'Positive' : 'Negative'}
+      {/* Bottom row: Spans (left) + Device & Feedback stacked (right) */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: trace.spans.length > 0 ? '1fr 340px' : '1fr 1fr',
+        gap: 16,
+        alignItems: 'start',
+      }}>
+        {/* Spans */}
+        {trace.spans.length > 0 && (
+          <div style={{ ...cardStyle, padding: 24 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 18, fontFamily: T.fontD, letterSpacing: '-0.01em' }}>
+              Execution Spans
+            </p>
+            {trace.spans.map((s, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                marginBottom: i < trace.spans.length - 1 ? 14 : 0,
+              }}>
+                <span style={{ fontSize: 12, color: T.muted, minWidth: 160, fontFamily: T.fontM }}>
+                  {s.name}
                 </span>
-              );
-            })}
+                <div style={{ flex: 1, height: 6, background: 'rgba(46,61,84,0.5)', borderRadius: 3 }}>
+                  <div style={{
+                    width: `${totalDuration > 0 ? (s.durationMs / totalDuration) * 100 : 100}%`,
+                    height: 6,
+                    background: 'linear-gradient(90deg, #00D4FF, #7B5FFF)',
+                    borderRadius: 3,
+                  }} />
+                </div>
+                <span style={{ fontSize: 12, color: T.text, minWidth: 56, textAlign: 'right', fontFamily: T.fontM }}>
+                  {s.durationMs}ms
+                </span>
+              </div>
+            ))}
           </div>
         )}
+
+        {/* Right column: Device + Feedback stacked */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Device & Environment */}
+          {trace.device && (
+            <div style={{ ...cardStyle, padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+                <Smartphone size={14} color="#3DDC84" strokeWidth={1.5} />
+                <p style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontD, letterSpacing: '-0.01em' }}>
+                  Device & Environment
+                </p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {[
+                  { label: 'Device',      value: trace.device.deviceModel,                    color: T.text },
+                  { label: 'OS',          value: androidOsLabel(trace.device.androidVersion), color: '#3DDC84' },
+                  { label: 'SDK Version', value: `v${trace.device.sdkVersion}`,               color: T.purple },
+                  { label: 'App Version', value: `v${trace.device.appVersion}`,               color: T.muted },
+                ].map(({ label, value, color }, i, arr) => (
+                  <div key={label} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '10px 0',
+                    borderBottom: i < arr.length - 1 ? `1px solid rgba(46,61,84,0.4)` : 'none',
+                  }}>
+                    <span style={{ fontSize: 11, color: T.muted, fontFamily: T.fontM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      {label}
+                    </span>
+                    <span style={{ fontSize: 12, color, fontFamily: T.fontM, fontWeight: 500 }}>
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Feedback */}
+          <div style={{ ...cardStyle, padding: 24 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: T.text, marginBottom: 16, fontFamily: T.fontD, letterSpacing: '-0.01em' }}>
+              Feedback
+            </p>
+            {trace.feedback.length === 0 ? (
+              <p style={{ color: T.muted, fontSize: 13, fontFamily: T.fontM }}>No feedback recorded</p>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                {trace.feedback.map((f, i) => (
+                  <FeedbackPill key={i} f={f} />
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
     </div>
   );
