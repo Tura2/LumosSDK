@@ -58,6 +58,10 @@ object IngestionService {
                         it[model] = p.model; it[tokensIn] = p.tokensIn
                         it[tokensOut] = p.tokensOut; it[latencyMs] = p.latencyMs
                         it[status] = p.status; it[startedAt] = now
+                        it[Traces.deviceModel] = env.deviceModel
+                        it[Traces.androidVersion] = env.androidVersion
+                        it[Traces.sdkVersion] = env.sdkVersion
+                        it[Traces.appVersion] = env.appVersion
                     }
                     val isOk = p.status == "OK"
                     val isError = p.status == "ERROR"

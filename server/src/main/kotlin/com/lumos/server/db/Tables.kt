@@ -44,6 +44,10 @@ object Traces : Table("traces") {
     val latencyMs = long("latency_ms").nullable()
     val status = varchar("status", 20)
     val startedAt = datetime("started_at")
+    val deviceModel = varchar("device_model", 200).nullable()
+    val androidVersion = integer("android_version").nullable()
+    val sdkVersion = varchar("sdk_version", 50).nullable()
+    val appVersion = varchar("app_version", 50).nullable()
     override val primaryKey = PrimaryKey(traceId)
 }
 
