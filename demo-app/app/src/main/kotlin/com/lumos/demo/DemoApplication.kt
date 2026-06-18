@@ -8,7 +8,7 @@ class DemoApplication : Application() {
         super.onCreate()
         Lumos.init(this) {
             apiKey = BuildConfig.LUMOS_API_KEY
-            serverUrl = "http://YOUR_VPS_IP:8080"
+            serverUrl = BuildConfig.SERVER_URL
         }
     }
 }

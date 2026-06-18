@@ -21,3 +21,5 @@ portal/.vite/
 .idea/
 .DS_Store
 .playwright-mcp/
+# Playwright screenshot artifacts
+*.png

@@ -38,7 +38,7 @@ class ChatViewModel : ViewModel() {
 
     private val http = OkHttpClient()
     private val json = Json { ignoreUnknownKeys = true }
-    private val SERVER = "http://YOUR_VPS_IP:8080"
+    private val SERVER = BuildConfig.SERVER_URL
 
     fun send(text: String) {
         viewModelScope.launch {
@@ -50,13 +50,27 @@ class ChatViewModel : ViewModel() {
 
                 val result = withContext(Dispatchers.IO) {
                     runCatching {
+                        // Span 1: serialize the request body
+                        val serializeSpan = trace.startSpan("serialize_request")
                         val body = Json.encodeToString(DemoChatRequest.serializer(), DemoChatRequest(text))
-                        val req = Request.Builder().url("$SERVER/v0/demo/chat")
-                            .post(body.toRequestBody("application/json".toMediaType()))
+                            .toRequestBody("application/json".toMediaType())
+                        serializeSpan.end()
+
+                        // Span 2: full HTTP round-trip to the server (includes OpenRouter call)
+                        val httpSpan = trace.startSpan("http_round_trip")
+                        val req = Request.Builder()
+                            .url("$SERVER/v0/demo/chat")
+                            .post(body)
                             .build()
-                        http.newCall(req).execute().use { resp ->
-                            json.decodeFromString<DemoChatResponse>(resp.body!!.string())
-                        }
+                        val raw = http.newCall(req).execute().use { resp -> resp.body!!.string() }
+                        httpSpan.end()
+
+                        // Span 3: deserialize the response
+                        val parseSpan = trace.startSpan("parse_response")
+                        val parsed = json.decodeFromString<DemoChatResponse>(raw)
+                        parseSpan.end()
+
+                        parsed
                     }
                 }
 
@@ -67,11 +81,11 @@ class ChatViewModel : ViewModel() {
                     _messages.value = _messages.value + ChatMessage(
                         role = "ai", text = r.reply, traceId = trace.id
                     )
-                }.onFailure {
-                    trace.logError(it)
+                }.onFailure { err ->
+                    trace.logError(err)
                     trace.end()
                     Lumos.endTrace(trace)
-                    _messages.value = _messages.value + ChatMessage(role = "ai", text = "Error: ${it.message}")
+                    _messages.value = _messages.value + ChatMessage(role = "ai", text = "Error: ${err.message}")
                 }
             } finally {
                 _loading.value = false

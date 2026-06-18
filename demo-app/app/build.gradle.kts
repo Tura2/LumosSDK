@@ -20,6 +20,7 @@ android {
             localPropsFile.inputStream().use { props.load(it) }
         }
         buildConfigField("String", "LUMOS_API_KEY", "\"${props.getProperty("LUMOS_API_KEY", "")}\"")
+        buildConfigField("String", "SERVER_URL", "\"${props.getProperty("SERVER_URL", "http://localhost:8080")}\"")
     }
     buildFeatures {
         buildConfig = true
