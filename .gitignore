@@ -23,3 +23,6 @@ portal/.vite/
 .playwright-mcp/
 # Playwright screenshot artifacts
 *.png
+# Allow app icon assets
+!portal/public/lumos-icon.png
+!demo-app/app/src/main/res/drawable/ic_lumos.png

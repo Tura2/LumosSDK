@@ -64,7 +64,7 @@ export default function NavBar() {
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, padding: '0 8px' }}>
         <img
-          src="/lumos-mark.svg"
+          src="/lumos-icon.png"
           width={36} height={36}
           alt="Lumos"
           style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
