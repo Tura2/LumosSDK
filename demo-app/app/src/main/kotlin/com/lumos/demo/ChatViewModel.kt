@@ -39,6 +39,7 @@ class ChatViewModel : ViewModel() {
     private val http = OkHttpClient()
     private val json = Json { ignoreUnknownKeys = true }
     private val SERVER = BuildConfig.SERVER_URL
+    private val API_KEY = BuildConfig.LUMOS_API_KEY
 
     fun send(text: String) {
         viewModelScope.launch {
@@ -50,22 +51,24 @@ class ChatViewModel : ViewModel() {
 
                 val result = withContext(Dispatchers.IO) {
                     runCatching {
-                        // Span 1: serialize the request body
                         val serializeSpan = trace.startSpan("serialize_request")
                         val body = Json.encodeToString(DemoChatRequest.serializer(), DemoChatRequest(text))
                             .toRequestBody("application/json".toMediaType())
                         serializeSpan.end()
 
-                        // Span 2: full HTTP round-trip to the server (includes OpenRouter call)
                         val httpSpan = trace.startSpan("http_round_trip")
                         val req = Request.Builder()
                             .url("$SERVER/v0/demo/chat")
+                            .addHeader("X-Lumos-Key", API_KEY)
                             .post(body)
                             .build()
-                        val raw = http.newCall(req).execute().use { resp -> resp.body!!.string() }
+                        val raw = http.newCall(req).execute().use { resp ->
+                            val bodyStr = resp.body?.string() ?: ""
+                            if (!resp.isSuccessful) throw Exception("Server error ${resp.code}: $bodyStr")
+                            bodyStr
+                        }
                         httpSpan.end()
 
-                        // Span 3: deserialize the response
                         val parseSpan = trace.startSpan("parse_response")
                         val parsed = json.decodeFromString<DemoChatResponse>(raw)
                         parseSpan.end()
@@ -85,7 +88,9 @@ class ChatViewModel : ViewModel() {
                     trace.logError(err)
                     trace.end()
                     Lumos.endTrace(trace)
-                    _messages.value = _messages.value + ChatMessage(role = "ai", text = "Error: ${err.message}")
+                    _messages.value = _messages.value + ChatMessage(
+                        role = "ai", text = "Error: ${err.message}"
+                    )
                 }
             } finally {
                 _loading.value = false

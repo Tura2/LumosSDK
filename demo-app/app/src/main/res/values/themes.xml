@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LumosDemo" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#0C0E16</item>
+        <item name="android:statusBarColor">#0C0E16</item>
+        <item name="android:navigationBarColor">#13161F</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
