@@ -27,6 +27,8 @@ fun Application.module() {
         allowHeader("Content-Type")
         allowHeader("X-Lumos-Key")
         allowMethod(io.ktor.http.HttpMethod.Delete)
+        allowMethod(io.ktor.http.HttpMethod.Patch)
+        allowMethod(io.ktor.http.HttpMethod.Put)
     }
     install(Authentication) {
         jwt("jwt") {
