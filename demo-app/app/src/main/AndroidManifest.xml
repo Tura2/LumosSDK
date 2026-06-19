@@ -4,7 +4,8 @@
     <application
         android:name=".DemoApplication"
         android:label="LumosDemo"
-        android:theme="@style/Theme.AppCompat">
+        android:theme="@style/Theme.AppCompat"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true">
