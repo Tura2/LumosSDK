@@ -20,8 +20,10 @@ export default function ApiKeys() {
   const [copied, setCopied]       = useState(false);
   const [inputFocused, setFocused]= useState(false);
 
-  const loadKeys = (id: string) =>
-    api.get(`/api/apps/${id}/keys`).then(r => setKeys(r.data));
+  const loadKeys = async (id: string) => {
+    const r = await api.get(`/api/apps/${id}/keys`);
+    setKeys(r.data);
+  };
 
   useEffect(() => {
     if (!currentAppId) { setLoading(false); return; }
@@ -34,17 +36,34 @@ export default function ApiKeys() {
     const res = await api.post(`/api/apps/${currentAppId}/keys`, { name: keyName });
     setNewSecret(res.data.secret);
     setKeyName(''); setShowForm(false);
-    loadKeys(currentAppId);
+    await loadKeys(currentAppId);
   }
 
   async function revoke(keyId: string) {
     await api.delete(`/api/keys/${keyId}`);
-    if (currentAppId) loadKeys(currentAppId);
+    if (currentAppId) await loadKeys(currentAppId);
   }
 
   function copySecret() {
     if (!newSecret) return;
-    navigator.clipboard.writeText(newSecret);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(newSecret).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }).catch(() => execCopy(newSecret));
+    } else {
+      execCopy(newSecret);
+    }
+  }
+
+  function execCopy(text: string) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    Object.assign(ta.style, { position: 'fixed', opacity: '0', top: '0', left: '0' });
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch {}
+    document.body.removeChild(ta);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
