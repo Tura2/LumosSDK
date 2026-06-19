@@ -36,6 +36,20 @@ fun Routing.keyRoutes() {
             call.respond(HttpStatusCode.Created, mapOf("id" to keyId, "secret" to secret))
         }
 
+        delete("/api/apps/{appId}/keys/{keyId}") {
+            val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
+            val appId = call.parameters["appId"]!!
+            val keyId = call.parameters["keyId"]!!
+            val owns = transaction {
+                (ApiKeys innerJoin Apps)
+                    .select { (ApiKeys.id eq keyId) and (Apps.id eq appId) and (Apps.accountId eq accountId) }
+                    .count() > 0
+            }
+            if (!owns) return@delete call.respond(HttpStatusCode.Forbidden)
+            if (KeyService.delete(keyId)) call.respond(HttpStatusCode.NoContent)
+            else call.respond(HttpStatusCode.NotFound)
+        }
+
         delete("/api/keys/{keyId}") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val keyId = call.parameters["keyId"]!!

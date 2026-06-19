@@ -48,6 +48,10 @@ object KeyService {
             }
     }
 
+    fun delete(keyId: String): Boolean = transaction {
+        ApiKeys.deleteWhere { ApiKeys.id eq keyId } > 0
+    }
+
     fun revoke(keyId: String): Boolean = transaction {
         ApiKeys.update({ ApiKeys.id eq keyId }) {
             it[revokedAt] = LocalDateTime.now()

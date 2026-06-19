@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Copy, Check, Key } from 'lucide-react';
+import { Plus, X, Copy, Check, Key, Trash2 } from 'lucide-react';
 import { api } from '../api/client';
 import { T, cardStyle, transition } from '../theme';
 import { useApps } from '../app/AppContext';
@@ -42,6 +42,12 @@ export default function ApiKeys() {
   async function revoke(keyId: string) {
     await api.delete(`/api/keys/${keyId}`);
     if (currentAppId) await loadKeys(currentAppId);
+  }
+
+  async function deleteKey(keyId: string) {
+    if (!currentAppId) return;
+    await api.delete(`/api/apps/${currentAppId}/keys/${keyId}`);
+    await loadKeys(currentAppId);
   }
 
   function copySecret() {
@@ -220,6 +226,22 @@ export default function ApiKeys() {
                 }}
               >
                 Revoke
+              </button>
+            )}
+            {k.revoked && (
+              <button
+                onClick={() => deleteKey(k.id)}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.1)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'none', border: `1px solid ${T.red}`,
+                  color: T.red, padding: '6px 16px', borderRadius: 8,
+                  cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  minHeight: 36, transition,
+                }}
+              >
+                <Trash2 size={13} /> Delete
               </button>
             )}
           </div>
