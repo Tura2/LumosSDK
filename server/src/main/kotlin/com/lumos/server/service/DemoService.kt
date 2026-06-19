@@ -47,7 +47,7 @@ object DemoService {
         val usage = body["usage"]?.jsonObject
         return DemoChatResponse(
             reply = reply,
-            model = request.model,
+            model = body["model"]?.jsonPrimitive?.content ?: request.model,
             tokensIn = usage?.get("prompt_tokens")?.jsonPrimitive?.int ?: 0,
             tokensOut = usage?.get("completion_tokens")?.jsonPrimitive?.int ?: 0,
             latencyMs = latency,

@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -229,25 +230,27 @@ private fun MessageBubble(
         }
 
         if (!isUser && msg.traceId != null && !isError) {
+            val locked = msg.feedback != null
             Row(
                 Modifier.padding(top = 6.dp, start = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FeedbackChip("👍") { onThumbsUp(msg.traceId) }
-                FeedbackChip("👎") { onThumbsDown(msg.traceId) }
+                FeedbackChip("👍", selected = msg.feedback == "up", locked = locked) { onThumbsUp(msg.traceId) }
+                FeedbackChip("👎", selected = msg.feedback == "down", locked = locked) { onThumbsDown(msg.traceId) }
             }
         }
     }
 }
 
 @Composable
-private fun FeedbackChip(emoji: String, onClick: () -> Unit) {
+private fun FeedbackChip(emoji: String, selected: Boolean, locked: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Surface2)
-            .border(1.dp, Border, RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
+            .background(if (selected) Purple.copy(alpha = 0.18f) else Surface2)
+            .border(1.dp, if (selected) Purple else Border, RoundedCornerShape(8.dp))
+            .then(if (!locked) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(if (locked && !selected) Modifier.alpha(0.4f) else Modifier)
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         Text(emoji, fontSize = 13.sp)

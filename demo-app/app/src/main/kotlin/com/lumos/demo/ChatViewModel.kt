@@ -21,6 +21,7 @@ data class ChatMessage(
     val role: String,
     val text: String,
     val traceId: String? = null,
+    val feedback: String? = null, // "up" | "down" | null
 )
 
 @Serializable data class DemoChatRequest(val message: String)
@@ -98,6 +99,19 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun thumbsUp(traceId: String) { Lumos.feedback(traceId, Feedback.ThumbsUp) }
-    fun thumbsDown(traceId: String) { Lumos.feedback(traceId, Feedback.ThumbsDown) }
+    fun thumbsUp(traceId: String) {
+        if (_messages.value.find { it.traceId == traceId }?.feedback != null) return
+        _messages.value = _messages.value.map {
+            if (it.traceId == traceId) it.copy(feedback = "up") else it
+        }
+        Lumos.feedback(traceId, Feedback.ThumbsUp)
+    }
+
+    fun thumbsDown(traceId: String) {
+        if (_messages.value.find { it.traceId == traceId }?.feedback != null) return
+        _messages.value = _messages.value.map {
+            if (it.traceId == traceId) it.copy(feedback = "down") else it
+        }
+        Lumos.feedback(traceId, Feedback.ThumbsDown)
+    }
 }

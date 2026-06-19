@@ -7,6 +7,7 @@ import { T, cardStyle, transition } from '../theme';
 import { useApps } from '../app/AppContext';
 import StatusBadge from '../components/StatusBadge';
 import PageHeader from '../components/PageHeader';
+import { calcCost, formatCost } from '../lib/pricing';
 
 const TIME_RANGES = [
   { key: '30m', label: 'Past 30 min',  ms: 30 * 60_000 },
@@ -105,7 +106,7 @@ interface TraceRow {
 }
 
 const PAGE_SIZE = 10;
-const COLS = '1.6fr 0.9fr 1fr 0.9fr 0.9fr 1.1fr';
+const COLS = '1.6fr 0.9fr 1fr 0.9fr 0.9fr 0.8fr 1.1fr';
 
 function DeviceBadge({ device }: { device?: DeviceInfo }) {
   if (!device) return <span style={{ color: '#6A7D9A', fontSize: 12 }}>—</span>;
@@ -199,10 +200,11 @@ export default function TraceExplorer() {
           <button
             onClick={() => {
               const csv = [
-                ['Trace ID', 'Feature', 'Status', 'Model', 'Latency (ms)', 'Tokens In', 'Tokens Out', 'Device', 'Android API', 'SDK', 'App Version', 'Started At'].join(','),
+                ['Trace ID', 'Feature', 'Status', 'Model', 'Latency (ms)', 'Tokens In', 'Tokens Out', 'Cost (USD)', 'Device', 'Android API', 'SDK', 'App Version', 'Started At'].join(','),
                 ...filteredTraces.map(t => [
                   t.traceId, t.feature, t.status, t.model ?? '',
                   t.latencyMs ?? '', t.tokensIn ?? '', t.tokensOut ?? '',
+                  calcCost(t.model, t.tokensIn, t.tokensOut)?.toFixed(6) ?? '',
                   t.device?.deviceModel ?? '', t.device?.androidVersion ?? '',
                   t.device?.sdkVersion ?? '', t.device?.appVersion ?? '',
                   t.startedAt,
@@ -338,7 +340,7 @@ export default function TraceExplorer() {
               padding: '12px 20px',
               borderBottom: `1px solid ${T.border}`,
             }}>
-              {['Feature', 'Status', 'Device', 'Latency', 'Tokens', 'Time'].map(h => (
+              {['Feature', 'Status', 'Device', 'Latency', 'Tokens', 'Cost', 'Time'].map(h => (
                 <span key={h} style={{
                   fontSize: 10, fontWeight: 600,
                   letterSpacing: '0.1em', textTransform: 'uppercase' as const,
@@ -395,6 +397,10 @@ export default function TraceExplorer() {
                   ) : (
                     <span style={{ color: T.muted }}>—</span>
                   )}
+                </span>
+
+                <span style={{ fontSize: 12, fontFamily: T.fontM, color: T.green }}>
+                  {formatCost(calcCost(t.model, t.tokensIn, t.tokensOut))}
                 </span>
 
                 <span style={{ fontSize: 11, color: T.muted }}>

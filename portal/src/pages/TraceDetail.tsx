@@ -6,6 +6,7 @@ import { T, cardStyle, transition } from '../theme';
 import { Bone } from '../components/Skeleton';
 import StatusBadge from '../components/StatusBadge';
 import { androidOsLabel } from '../lib/format';
+import { calcCost, formatCost } from '../lib/pricing';
 
 interface DeviceInfo {
   deviceModel: string; androidVersion: number; sdkVersion: string; appVersion: string;
@@ -141,6 +142,20 @@ export default function TraceDetail() {
               <span style={{ color: T.muted }}>{trace.tokensOut}↓</span>
             </span>
           )}
+
+          {(() => {
+            const cost = calcCost(trace.model, trace.tokensIn, trace.tokensOut);
+            return cost != null ? (
+              <span style={{
+                background: 'rgba(0,232,135,0.08)',
+                border: '1px solid rgba(0,232,135,0.2)',
+                borderRadius: 100, padding: '4px 10px',
+                color: T.green, fontSize: 12, fontFamily: T.fontM, fontWeight: 600,
+              }}>
+                {formatCost(cost)}
+              </span>
+            ) : null;
+          })()}
         </div>
 
         {/* Conversation */}

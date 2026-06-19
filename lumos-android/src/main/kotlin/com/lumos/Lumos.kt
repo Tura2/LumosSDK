@@ -32,13 +32,16 @@ object Lumos {
             is Feedback.ThumbsUp -> "THUMBS_UP"
             is Feedback.ThumbsDown -> "THUMBS_DOWN"
         }
-        val payload = FeedbackPayload(traceId = traceId, kind = kind)
-        enqueue("FEEDBACK", Json.encodeToString(payload))
+        val envelope = buildEnvelope("FEEDBACK", Json.encodeToString(FeedbackPayload(traceId = traceId, kind = kind)))
+        scope.launch {
+            LumosDatabase.get(ctx).eventDao().insert(PendingEvent(eventId = envelope.eventId, payloadJson = Json.encodeToString(envelope)))
+            triggerUpload()
+        }
     }
 
     fun endTrace(trace: Trace) {
         if (!trace.ended) trace.end()
-        val payload = TracePayload(
+        val tracePayload = TracePayload(
             traceId = trace.id,
             feature = trace.feature,
             input = trace.input,
@@ -49,17 +52,22 @@ object Lumos {
             latencyMs = trace.latencyMs,
             status = trace.status.name,
         )
-        enqueue("TRACE", Json.encodeToString(payload))
-        trace.spans.forEach { span ->
-            val spanPayload = SpanPayload(
-                traceId = trace.id,
-                spanId = span.spanId,
-                name = span.name,
-                durationMs = span.durationMs,
-            )
-            enqueue("SPAN", Json.encodeToString(spanPayload))
+        val envelopes = buildList {
+            add(buildEnvelope("TRACE", Json.encodeToString(tracePayload)))
+            trace.spans.forEach { span ->
+                add(buildEnvelope("SPAN", Json.encodeToString(SpanPayload(
+                    traceId = trace.id,
+                    spanId = span.spanId,
+                    name = span.name,
+                    durationMs = span.durationMs,
+                ))))
+            }
         }
-        triggerUpload()
+        scope.launch {
+            val dao = LumosDatabase.get(ctx).eventDao()
+            envelopes.forEach { dao.insert(PendingEvent(eventId = it.eventId, payloadJson = Json.encodeToString(it))) }
+            triggerUpload()
+        }
     }
 
     fun setListener(l: LumosListener) { listener = l }
@@ -68,25 +76,18 @@ object Lumos {
 
     fun shutdown() { scope.cancel() }
 
-    private fun enqueue(type: String, payloadJson: String) {
-        val envelope = EventEnvelope(
-            eventId = UUID.randomUUID().toString(),
-            type = type,
-            timestamp = Instant.now().toString(),
-            sessionId = SessionManager.currentSessionId(),
-            appPackage = ctx.packageName,
-            appVersion = DeviceInfo.appVersion(ctx),
-            sdkVersion = "0.1.0",
-            deviceModel = DeviceInfo.model(),
-            androidVersion = DeviceInfo.androidVersion(),
-            payload = payloadJson,
-        )
-        scope.launch {
-            LumosDatabase.get(ctx).eventDao().insert(
-                PendingEvent(envelope.eventId, payloadJson = Json.encodeToString(envelope))
-            )
-        }
-    }
+    private fun buildEnvelope(type: String, payloadJson: String) = EventEnvelope(
+        eventId = UUID.randomUUID().toString(),
+        type = type,
+        timestamp = Instant.now().toString(),
+        sessionId = SessionManager.currentSessionId(),
+        appPackage = ctx.packageName,
+        appVersion = DeviceInfo.appVersion(ctx),
+        sdkVersion = "0.1.0",
+        deviceModel = DeviceInfo.model(),
+        androidVersion = DeviceInfo.androidVersion(),
+        payload = payloadJson,
+    )
 
     private fun triggerUpload() {
         UploadWorker.enqueue(ctx, config.serverUrl, config.apiKey)
