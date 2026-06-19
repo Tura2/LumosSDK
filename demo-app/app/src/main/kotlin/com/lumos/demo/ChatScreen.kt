@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -96,15 +97,11 @@ private fun ChatHeader() {
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(
-                    Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(headerGradient),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("⚡", fontSize = 16.sp)
-                }
+                Image(
+                    painter = painterResource(R.drawable.ic_lumos),
+                    contentDescription = "Lumos",
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)),
+                )
                 Column {
                     Text(
                         "Lumos Demo",
@@ -146,15 +143,11 @@ private fun EmptyState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(
-            Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(18.dp))
-                .background(headerGradient),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("⚡", fontSize = 28.sp)
-        }
+        Image(
+            painter = painterResource(R.drawable.ic_lumos),
+            contentDescription = "Lumos",
+            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)),
+        )
         Text(
             "Lumos AI",
             color = TextPri,
@@ -190,15 +183,11 @@ private fun MessageBubble(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.padding(bottom = 5.dp, start = 2.dp),
             ) {
-                Box(
-                    Modifier
-                        .size(20.dp)
-                        .clip(CircleShape)
-                        .background(headerGradient),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("⚡", fontSize = 9.sp)
-                }
+                Image(
+                    painter = painterResource(R.drawable.ic_lumos),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp).clip(CircleShape),
+                )
                 Text(
                     "Lumos AI",
                     color = PurpleLight,
