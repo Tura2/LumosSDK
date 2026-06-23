@@ -47,5 +47,6 @@ fun Application.module() {
         keyRoutes()
         statsRoutes()
         traceRoutes()
+        sessionRoutes()
     }
 }
