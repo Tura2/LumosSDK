@@ -65,7 +65,7 @@ export default function StatsCard({ label, value, unit = '', valueColor, trend, 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
         <span style={{
           fontSize: 42, fontWeight: 700,
-          fontFamily: T.fontD,
+          fontFamily: "'Satoshi', 'Inter', system-ui, sans-serif",
           letterSpacing: '-0.02em',
           color,
           lineHeight: 1,

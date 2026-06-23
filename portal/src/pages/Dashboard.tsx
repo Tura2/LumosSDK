@@ -178,7 +178,7 @@ export default function Dashboard() {
             <p style={{ fontSize: 10, color: T.muted, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: T.fontM }}>
               {label}
             </p>
-            <span style={{ fontSize: 30, fontWeight: 700, fontFamily: T.fontD, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
+            <span style={{ fontSize: 30, fontWeight: 700, fontFamily: "'Satoshi', 'Inter', system-ui, sans-serif", color, letterSpacing: '-0.02em', lineHeight: 1 }}>
               {value}
             </span>
             <p style={{ fontSize: 11, color: T.muted, marginTop: 6, fontFamily: T.fontM }}>{sub}</p>
@@ -246,7 +246,7 @@ export default function Dashboard() {
                 }}>
                   <span style={{
                     fontSize: 32, fontWeight: 700,
-                    fontFamily: T.fontD, letterSpacing: '-0.02em',
+                    fontFamily: "'Satoshi', 'Inter', system-ui, sans-serif", letterSpacing: '-0.02em',
                     ...gradientText,
                   }}>
                     {thumbsRatio}%
