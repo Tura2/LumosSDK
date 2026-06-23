@@ -43,20 +43,28 @@ fun Routing.accountRoutes() {
         patch("/api/account") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val req = call.receive<UpdateAccountRequest>()
-            val updated = transaction {
-                Accounts.update({ Accounts.id eq accountId }) {
-                    if (req.name != null) it[name] = req.name
-                    if (req.email != null) it[email] = req.email
+            try {
+                val updated = transaction {
+                    Accounts.update({ Accounts.id eq accountId }) {
+                        if (req.name != null) it[name] = req.name
+                        if (req.email != null) it[email] = req.email
+                    }
+                    Accounts.select { Accounts.id eq accountId }.singleOrNull()?.let { row ->
+                        mapOf(
+                            "id" to row[Accounts.id],
+                            "email" to row[Accounts.email],
+                            "name" to (row[Accounts.name] ?: ""),
+                        )
+                    }
+                } ?: return@patch call.respond(HttpStatusCode.NotFound)
+                call.respond(updated)
+            } catch (e: Exception) {
+                if (e.message?.contains("UNIQUE constraint failed") == true) {
+                    call.respond(HttpStatusCode.Conflict, mapOf("error" to "Email already in use"))
+                } else {
+                    throw e
                 }
-                Accounts.select { Accounts.id eq accountId }.singleOrNull()?.let { row ->
-                    mapOf(
-                        "id" to row[Accounts.id],
-                        "email" to row[Accounts.email],
-                        "name" to (row[Accounts.name] ?: ""),
-                    )
-                }
-            } ?: return@patch call.respond(HttpStatusCode.NotFound)
-            call.respond(updated)
+            }
         }
 
         delete("/api/account") {

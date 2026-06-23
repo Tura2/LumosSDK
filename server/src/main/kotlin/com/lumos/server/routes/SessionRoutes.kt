@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.UUID
 
 @Serializable
 data class SessionSummary(
@@ -32,6 +33,11 @@ fun Routing.sessionRoutes() {
                 Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0
             }
             if (!owns) return@get call.respond(HttpStatusCode.Forbidden)
+
+            // Validate UUID format to prevent SQL injection in the raw exec below
+            try { UUID.fromString(appId) } catch (_: IllegalArgumentException) {
+                return@get call.respond(HttpStatusCode.BadRequest)
+            }
 
             val sessions = transaction {
                 exec(
