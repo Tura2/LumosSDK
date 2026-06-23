@@ -126,7 +126,9 @@ export default function TraceExplorer() {
   const [hoveredId, setHovered]     = useState<string | null>(null);
   const [filterStatus, setStatus]     = useState<'ALL' | 'OK' | 'ERROR'>('ALL');
   const [filterFeature, setFeature]   = useState('ALL');
-  const [timeRange, setTimeRange]     = useState('1d');
+  const [timeRange, setTimeRange] = useState<string>(
+    () => localStorage.getItem('lumos_trace_days') ?? '7d'
+  );
   const [search, setSearch]           = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [refreshKey, setRefreshKey]   = useState(0);
@@ -162,6 +164,12 @@ export default function TraceExplorer() {
 
   function resetPage() { setPage(0); }
 
+  function handleTimeRange(k: string) {
+    localStorage.setItem('lumos_trace_days', k);
+    setTimeRange(k);
+    resetPage();
+  }
+
   if (loading) return <TracesSkeleton />;
 
   return (
@@ -179,7 +187,7 @@ export default function TraceExplorer() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <TimeRangeSelector value={timeRange} onChange={k => { setTimeRange(k); resetPage(); }} />
+          <TimeRangeSelector value={timeRange} onChange={handleTimeRange} />
 
           <button
             onClick={() => setRefreshKey(k => k + 1)}
@@ -319,7 +327,7 @@ export default function TraceExplorer() {
         <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
           <p style={{ color: T.muted, fontSize: 14, marginBottom: 12 }}>No traces match these filters.</p>
           <button
-            onClick={() => { setStatus('ALL'); setFeature('ALL'); setSearch(''); setTimeRange('1d'); }}
+            onClick={() => { setStatus('ALL'); setFeature('ALL'); setSearch(''); handleTimeRange('7d'); }}
             style={{
               background: 'rgba(var(--color-cyan-rgb),0.1)', border: `1px solid rgba(var(--color-cyan-rgb),0.25)`,
               color: T.cyan, borderRadius: 8, padding: '8px 18px',
