@@ -7,6 +7,7 @@ object Accounts : Table("accounts") {
     val id = varchar("id", 36)
     val email = varchar("email", 255).uniqueIndex()
     val passwordHash = varchar("password_hash", 255)
+    val name = varchar("name", 100).nullable()
     val createdAt = datetime("created_at")
     override val primaryKey = PrimaryKey(id)
 }
@@ -16,6 +17,7 @@ object Apps : Table("apps") {
     val accountId = varchar("account_id", 36).references(Accounts.id)
     val name = varchar("name", 100)
     val packageName = varchar("package_name", 255)
+    val debug = bool("debug").nullable()
     val createdAt = datetime("created_at")
     override val primaryKey = PrimaryKey(id)
 }

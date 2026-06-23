@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Serializable data class CreateAppRequest(val name: String, val packageName: String)
-@Serializable data class UpdateAppRequest(val name: String? = null, val packageName: String? = null)
+@Serializable data class UpdateAppRequest(val name: String? = null, val packageName: String? = null, val debug: Boolean? = null)
 
 fun Routing.appRoutes() {
     authenticate("jwt") {
@@ -59,6 +59,7 @@ fun Routing.appRoutes() {
                 Apps.update({ Apps.id eq appId }) {
                     if (req.name != null) it[name] = req.name
                     if (req.packageName != null) it[packageName] = req.packageName
+                    if (req.debug != null) it[debug] = req.debug
                 }
                 Apps.select { Apps.id eq appId }.singleOrNull()?.let { row ->
                     mapOf("id" to row[Apps.id], "name" to row[Apps.name], "packageName" to row[Apps.packageName])

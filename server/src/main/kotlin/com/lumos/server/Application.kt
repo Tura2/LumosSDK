@@ -43,6 +43,7 @@ fun Application.module() {
         demoRoutes()
         authRoutes()
         appRoutes()
+        accountRoutes()
         keyRoutes()
         statsRoutes()
         traceRoutes()
