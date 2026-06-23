@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../api/client';
 
-export interface App { id: string; name: string; packageName: string }
+export interface App { id: string; name: string; packageName: string; debug?: boolean | null }
 
 interface AppsValue {
   apps: App[];

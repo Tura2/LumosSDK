@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Activity, Key, LogOut, Boxes, ChevronDown, Moon, Sun, Monitor } from 'lucide-react';
+import { LayoutDashboard, Activity, Key, LogOut, Boxes, ChevronDown, Moon, Sun, Monitor, SlidersHorizontal } from 'lucide-react';
 import { T, gradientText, transition } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { useApps } from '../app/AppContext';
 import { useTheme } from '../ThemeContext';
 
 const links = [
-  { to: '/',       label: 'Dashboard', icon: <LayoutDashboard size={18} strokeWidth={1.5} /> },
-  { to: '/traces', label: 'Traces',    icon: <Activity        size={18} strokeWidth={1.5} /> },
-  { to: '/keys',   label: 'API Keys',  icon: <Key             size={18} strokeWidth={1.5} /> },
-  { to: '/apps',   label: 'Apps',      icon: <Boxes           size={18} strokeWidth={1.5} /> },
+  { to: '/',         label: 'Dashboard', icon: <LayoutDashboard   size={18} strokeWidth={1.5} /> },
+  { to: '/traces',   label: 'Traces',    icon: <Activity          size={18} strokeWidth={1.5} /> },
+  { to: '/keys',     label: 'API Keys',  icon: <Key               size={18} strokeWidth={1.5} /> },
+  { to: '/apps',     label: 'Apps',      icon: <Boxes             size={18} strokeWidth={1.5} /> },
+  { to: '/settings', label: 'Settings',  icon: <SlidersHorizontal size={18} strokeWidth={1.5} /> },
 ];
 
 function NavItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
