@@ -4,6 +4,7 @@ import com.lumos.server.db.ApiKeys
 import com.lumos.server.db.Apps
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.security.MessageDigest
 import java.time.LocalDateTime
