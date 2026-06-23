@@ -4,6 +4,7 @@ import TraceExplorer from './pages/TraceExplorer';
 import TraceDetail from './pages/TraceDetail';
 import ApiKeys from './pages/ApiKeys';
 import Apps from './pages/Apps';
+import Sessions from './pages/Sessions';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/"                 element={<Protected><Dashboard /></Protected>} />
             <Route path="/traces"           element={<Protected><TraceExplorer /></Protected>} />
             <Route path="/traces/:traceId"  element={<Protected><TraceDetail /></Protected>} />
+            <Route path="/sessions"         element={<Protected><Sessions /></Protected>} />
             <Route path="/keys"             element={<Protected><ApiKeys /></Protected>} />
             <Route path="/apps"             element={<Protected><Apps /></Protected>} />
             <Route path="/settings"         element={<Protected><Settings /></Protected>} />
