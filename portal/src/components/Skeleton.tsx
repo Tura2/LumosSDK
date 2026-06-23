@@ -44,7 +44,7 @@ export function DashboardSkeleton() {
           <Bone width="100%" height={11} radius={4} />
         </div>
         {[1,2,3,4].map(i => (
-          <div key={i} style={{ padding: '16px 20px', borderBottom: i < 4 ? `1px solid rgba(46,61,84,0.4)` : 'none' }}>
+          <div key={i} style={{ padding: '16px 20px', borderBottom: i < 4 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none' }}>
             <Bone width="100%" height={20} radius={6} />
           </div>
         ))}
@@ -64,7 +64,7 @@ export function TracesSkeleton() {
           <Bone width="100%" height={11} radius={4} />
         </div>
         {[1,2,3,4,5].map(i => (
-          <div key={i} style={{ padding: '16px 20px', borderBottom: i < 5 ? `1px solid rgba(46,61,84,0.4)` : 'none' }}>
+          <div key={i} style={{ padding: '16px 20px', borderBottom: i < 5 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none' }}>
             <Bone width="100%" height={22} radius={6} />
           </div>
         ))}

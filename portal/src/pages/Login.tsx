@@ -46,13 +46,13 @@ export default function Login() {
       <div style={{
         position: 'absolute', top: '15%', left: '25%',
         width: 600, height: 600,
-        background: 'radial-gradient(ellipse, rgba(0,212,255,0.07) 0%, transparent 65%)',
+        background: 'radial-gradient(ellipse, rgba(var(--color-cyan-rgb),0.07) 0%, transparent 65%)',
         pointerEvents: 'none',
       }} />
       <div style={{
         position: 'absolute', bottom: '15%', right: '20%',
         width: 450, height: 450,
-        background: 'radial-gradient(ellipse, rgba(123,95,255,0.06) 0%, transparent 65%)',
+        background: 'radial-gradient(ellipse, rgba(var(--color-purple-rgb),0.06) 0%, transparent 65%)',
         pointerEvents: 'none',
       }} />
 
@@ -62,7 +62,7 @@ export default function Login() {
           ...cardStyle,
           padding: '40px',
           width: 400,
-          boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.08)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--color-cyan-rgb),0.08)',
           position: 'relative', zIndex: 1,
         }}
       >
@@ -90,8 +90,8 @@ export default function Login() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             color: T.red, fontSize: 13, marginBottom: 16,
-            background: 'rgba(255,69,99,0.08)',
-            border: '1px solid rgba(255,69,99,0.2)',
+            background: 'rgba(var(--color-red-rgb),0.08)',
+            border: '1px solid rgba(var(--color-red-rgb),0.2)',
             borderRadius: 8, padding: '10px 12px',
           }}>
             <AlertCircle size={14} strokeWidth={1.5} />

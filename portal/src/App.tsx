@@ -11,6 +11,7 @@ import { AuthProvider } from './auth/AuthContext';
 import RequireAuth from './auth/RequireAuth';
 import { AppProvider, useApps } from './app/AppContext';
 import { T } from './theme';
+import { ThemeProvider } from './ThemeContext';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { apps, loading, error } = useApps();
@@ -54,18 +55,20 @@ function Protected({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login"            element={<Login />} />
-          <Route path="/"                 element={<Protected><Dashboard /></Protected>} />
-          <Route path="/traces"           element={<Protected><TraceExplorer /></Protected>} />
-          <Route path="/traces/:traceId"  element={<Protected><TraceDetail /></Protected>} />
-          <Route path="/keys"             element={<Protected><ApiKeys /></Protected>} />
-          <Route path="/apps"             element={<Protected><Apps /></Protected>} />
-          <Route path="*"                 element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login"            element={<Login />} />
+            <Route path="/"                 element={<Protected><Dashboard /></Protected>} />
+            <Route path="/traces"           element={<Protected><TraceExplorer /></Protected>} />
+            <Route path="/traces/:traceId"  element={<Protected><TraceDetail /></Protected>} />
+            <Route path="/keys"             element={<Protected><ApiKeys /></Protected>} />
+            <Route path="/apps"             element={<Protected><Apps /></Protected>} />
+            <Route path="*"                 element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

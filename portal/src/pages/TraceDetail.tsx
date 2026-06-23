@@ -32,11 +32,11 @@ function FeedbackPill({ f }: { f: string }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 8,
         background: isUp
-          ? hovered ? 'rgba(0,232,135,0.22)' : 'rgba(0,232,135,0.12)'
-          : hovered ? 'rgba(255,69,99,0.22)'  : 'rgba(255,69,99,0.12)',
+          ? hovered ? 'rgba(var(--color-green-rgb),0.22)' : 'rgba(var(--color-green-rgb),0.12)'
+          : hovered ? 'rgba(var(--color-red-rgb),0.22)'  : 'rgba(var(--color-red-rgb),0.12)',
         border: `1px solid ${isUp
-          ? hovered ? 'rgba(0,232,135,0.5)' : 'rgba(0,232,135,0.25)'
-          : hovered ? 'rgba(255,69,99,0.5)'  : 'rgba(255,69,99,0.25)'}`,
+          ? hovered ? 'rgba(var(--color-green-rgb),0.5)' : 'rgba(var(--color-green-rgb),0.25)'
+          : hovered ? 'rgba(var(--color-red-rgb),0.5)'  : 'rgba(var(--color-red-rgb),0.25)'}`,
         borderRadius: 12, padding: '12px 22px',
         fontSize: 14, color: isUp ? T.green : T.red,
         fontWeight: 500, cursor: 'default',
@@ -111,8 +111,8 @@ export default function TraceDetail() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22, alignItems: 'center' }}>
           <span style={{
             fontFamily: T.fontM, fontSize: 12,
-            background: 'rgba(0,212,255,0.08)',
-            border: '1px solid rgba(0,212,255,0.2)',
+            background: 'rgba(var(--color-cyan-rgb),0.08)',
+            border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
             borderRadius: 8, padding: '5px 12px', color: T.cyan,
           }}>
             {trace.feature}
@@ -122,8 +122,8 @@ export default function TraceDetail() {
 
           {trace.model && (
             <span style={{
-              background: 'rgba(123,95,255,0.1)',
-              border: '1px solid rgba(123,95,255,0.25)',
+              background: 'rgba(var(--color-purple-rgb),0.1)',
+              border: '1px solid rgba(var(--color-purple-rgb),0.25)',
               borderRadius: 100, padding: '4px 10px',
               color: '#A290FF', fontSize: 12, fontFamily: T.fontM,
             }}>
@@ -147,8 +147,8 @@ export default function TraceDetail() {
             const cost = calcCost(trace.model, trace.tokensIn, trace.tokensOut);
             return cost != null ? (
               <span style={{
-                background: 'rgba(0,232,135,0.08)',
-                border: '1px solid rgba(0,232,135,0.2)',
+                background: 'rgba(var(--color-green-rgb),0.08)',
+                border: '1px solid rgba(var(--color-green-rgb),0.2)',
                 borderRadius: 100, padding: '4px 10px',
                 color: T.green, fontSize: 12, fontFamily: T.fontM, fontWeight: 600,
               }}>
@@ -221,7 +221,7 @@ export default function TraceDetail() {
                 <span style={{ fontSize: 12, color: T.muted, minWidth: 160, fontFamily: T.fontM }}>
                   {s.name}
                 </span>
-                <div style={{ flex: 1, height: 6, background: 'rgba(46,61,84,0.5)', borderRadius: 3 }}>
+                <div style={{ flex: 1, height: 6, background: 'rgba(var(--color-border-rgb),0.5)', borderRadius: 3 }}>
                   <div style={{
                     width: `${totalDuration > 0 ? (s.durationMs / totalDuration) * 100 : 100}%`,
                     height: 6,
@@ -259,7 +259,7 @@ export default function TraceDetail() {
                   <div key={label} style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '10px 0',
-                    borderBottom: i < arr.length - 1 ? `1px solid rgba(46,61,84,0.4)` : 'none',
+                    borderBottom: i < arr.length - 1 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none',
                   }}>
                     <span style={{ fontSize: 11, color: T.muted, fontFamily: T.fontM, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {label}

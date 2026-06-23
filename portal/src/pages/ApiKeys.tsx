@@ -103,8 +103,8 @@ export default function ApiKeys() {
       {/* Revealed secret */}
       {newSecret && (
         <div style={{
-          background: 'rgba(0,232,135,0.06)',
-          border: '1px solid rgba(0,232,135,0.3)',
+          background: 'rgba(var(--color-green-rgb),0.06)',
+          border: '1px solid rgba(var(--color-green-rgb),0.3)',
           borderRadius: 14, padding: 16, marginBottom: 20,
           display: 'flex', flexDirection: 'column', gap: 8,
         }}>
@@ -123,7 +123,7 @@ export default function ApiKeys() {
             </code>
             <button onClick={copySecret} style={{
               display: 'flex', alignItems: 'center', gap: 4,
-              background: 'rgba(0,232,135,0.12)', border: '1px solid rgba(0,232,135,0.25)',
+              background: 'rgba(var(--color-green-rgb),0.12)', border: '1px solid rgba(var(--color-green-rgb),0.25)',
               borderRadius: 6, padding: '4px 10px', color: T.green,
               cursor: 'pointer', fontSize: 12, flexShrink: 0, transition,
             }}>
@@ -184,8 +184,8 @@ export default function ApiKeys() {
             {/* Icon */}
             <div style={{
               width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-              background: k.revoked ? 'rgba(255,69,99,0.08)' : 'rgba(0,232,135,0.08)',
-              border: `1px solid ${k.revoked ? 'rgba(255,69,99,0.2)' : 'rgba(0,232,135,0.2)'}`,
+              background: k.revoked ? 'rgba(var(--color-red-rgb),0.08)' : 'rgba(var(--color-green-rgb),0.08)',
+              border: `1px solid ${k.revoked ? 'rgba(var(--color-red-rgb),0.2)' : 'rgba(var(--color-green-rgb),0.2)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <Key size={16} color={k.revoked ? T.red : T.green} strokeWidth={1.5} />
@@ -204,8 +204,8 @@ export default function ApiKeys() {
             </div>
 
             <span style={{
-              background: k.revoked ? 'rgba(255,69,99,0.12)' : 'rgba(0,232,135,0.12)',
-              border: `1px solid ${k.revoked ? 'rgba(255,69,99,0.25)' : 'rgba(0,232,135,0.25)'}`,
+              background: k.revoked ? 'rgba(var(--color-red-rgb),0.12)' : 'rgba(var(--color-green-rgb),0.12)',
+              border: `1px solid ${k.revoked ? 'rgba(var(--color-red-rgb),0.25)' : 'rgba(var(--color-green-rgb),0.25)'}`,
               borderRadius: 100, padding: '4px 14px',
               color: k.revoked ? T.red : T.green,
               fontSize: 12, fontWeight: 600, fontFamily: T.fontM,
@@ -216,7 +216,7 @@ export default function ApiKeys() {
             {!k.revoked && (
               <button
                 onClick={() => revoke(k.id)}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.1)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--color-red-rgb),0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 style={{
                   background: 'none', border: `1px solid ${T.red}`,
@@ -231,7 +231,7 @@ export default function ApiKeys() {
             {k.revoked && (
               <button
                 onClick={() => deleteKey(k.id)}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.1)')}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--color-red-rgb),0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,

@@ -6,8 +6,8 @@ export default function StatusBadge({ status, size = 11 }: { status: string; siz
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
-      background: ok ? 'rgba(0,232,135,0.12)' : 'rgba(255,69,99,0.12)',
-      border: `1px solid ${ok ? 'rgba(0,232,135,0.25)' : 'rgba(255,69,99,0.25)'}`,
+      background: ok ? 'rgba(var(--color-green-rgb),0.12)' : 'rgba(var(--color-red-rgb),0.12)',
+      border: `1px solid ${ok ? 'rgba(var(--color-green-rgb),0.25)' : 'rgba(var(--color-red-rgb),0.25)'}`,
       borderRadius: 100, padding: '3px 10px',
       color: ok ? T.green : T.red, fontSize: 12, width: 'fit-content',
     }}>

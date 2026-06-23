@@ -30,7 +30,7 @@ export default function Onboarding() {
       <div style={{ ...cardStyle, padding: 40 }}>
         <div style={{
           width: 44, height: 44, borderRadius: 12, marginBottom: 20,
-          background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.25)',
+          background: 'rgba(var(--color-cyan-rgb),0.1)', border: '1px solid rgba(var(--color-cyan-rgb),0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Rocket size={20} color={T.cyan} strokeWidth={1.5} />

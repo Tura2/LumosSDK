@@ -1,9 +1,53 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+  --color-bg:           #040810;
+  --color-surface:      #070D1C;
+  --color-card:         #0B1628;
+  --color-card2:        #0F1E38;
+  --color-border:       #2E3D54;
+  --color-text:         #E8F2FF;
+  --color-muted:        #6A7D9A;
+  --color-cyan:         #00D4FF;
+  --color-cyan-rgb:     0,212,255;
+  --color-purple:       #7B5FFF;
+  --color-purple-rgb:   123,95,255;
+  --color-green:        #00E887;
+  --color-green-rgb:    0,232,135;
+  --color-amber:        #FFB800;
+  --color-red:          #FF4563;
+  --color-red-rgb:      255,69,99;
+  --color-border-rgb:   46,61,84;
+  --color-skeleton-from: #0B1628;
+  --color-skeleton-mid:  #162340;
+}
+
+[data-theme="light"] {
+  --color-bg:           #F4F7FC;
+  --color-surface:      #FFFFFF;
+  --color-card:         #FFFFFF;
+  --color-card2:        #EEF2FA;
+  --color-border:       #D0DCF0;
+  --color-text:         #0D1A2E;
+  --color-muted:        #5A6E8C;
+  --color-cyan:         #0099BB;
+  --color-cyan-rgb:     0,153,187;
+  --color-purple:       #6344E0;
+  --color-purple-rgb:   99,68,224;
+  --color-green:        #00A85A;
+  --color-green-rgb:    0,168,90;
+  --color-amber:        #C98A00;
+  --color-red:          #D93050;
+  --color-red-rgb:      217,48,80;
+  --color-border-rgb:   208,220,240;
+  --color-skeleton-from: #E8ECEF;
+  --color-skeleton-mid:  #F5F7FA;
+}
+
 body {
   font-family: 'Satoshi', 'Inter', system-ui, sans-serif;
-  background: #040810;
-  color: #E8F2FF;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 body::before {
@@ -11,8 +55,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(var(--color-cyan-rgb), 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--color-cyan-rgb), 0.035) 1px, transparent 1px);
   background-size: 80px 80px;
   pointer-events: none;
   z-index: 0;
@@ -27,8 +71,8 @@ body::before {
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2E3D54; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #00D4FF; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-cyan); }
 
 @keyframes shimmer {
   0%   { background-position: -400px 0; }

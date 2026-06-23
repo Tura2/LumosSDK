@@ -115,7 +115,7 @@ export default function Dashboard() {
       background: T.card, border: `1px solid ${T.border}`,
       borderRadius: 10, color: T.text, fontSize: 12, padding: '8px 12px',
     },
-    cursor: { fill: 'rgba(0,212,255,0.06)' },
+    cursor: { fill: 'rgba(var(--color-cyan-rgb),0.06)' },
   };
 
   const TRACE_COLS = '2fr 1fr 1.2fr 1fr 1.4fr';
@@ -304,17 +304,17 @@ export default function Dashboard() {
                 display: 'grid', gridTemplateColumns: TRACE_COLS,
                 columnGap: 20,
                 padding: '14px 20px',
-                borderBottom: idx < recentTraces.length - 1 ? `1px solid rgba(46,61,84,0.4)` : 'none',
+                borderBottom: idx < recentTraces.length - 1 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none',
                 cursor: 'pointer', transition,
-                background: hoveredRow === t.traceId ? 'rgba(0,212,255,0.04)' : 'transparent',
+                background: hoveredRow === t.traceId ? 'rgba(var(--color-cyan-rgb),0.04)' : 'transparent',
                 alignItems: 'center',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{
                   fontFamily: T.fontM, fontSize: 11,
-                  background: 'rgba(0,212,255,0.08)',
-                  border: '1px solid rgba(0,212,255,0.2)',
+                  background: 'rgba(var(--color-cyan-rgb),0.08)',
+                  border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
                   borderRadius: 6, padding: '3px 8px', color: T.cyan,
                   whiteSpace: 'nowrap',
                 }}>

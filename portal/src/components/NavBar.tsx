@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Activity, Key, LogOut, Boxes, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Activity, Key, LogOut, Boxes, ChevronDown, Moon, Sun, Monitor } from 'lucide-react';
 import { T, gradientText, transition } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { useApps } from '../app/AppContext';
+import { useTheme } from '../ThemeContext';
 
 const links = [
   { to: '/',       label: 'Dashboard', icon: <LayoutDashboard size={18} strokeWidth={1.5} /> },
@@ -30,7 +31,7 @@ function NavItem({ to, label, icon }: { to: string; label: string; icon: React.R
         transition,
         color: isActive ? T.cyan : hovered ? T.text : T.muted,
         background: isActive
-          ? 'rgba(0,212,255,0.08)'
+          ? 'rgba(var(--color-cyan-rgb),0.08)'
           : hovered
           ? 'rgba(255,255,255,0.04)'
           : 'transparent',
@@ -41,6 +42,29 @@ function NavItem({ to, label, icon }: { to: string; label: string; icon: React.R
       {icon}
       {label}
     </NavLink>
+  );
+}
+
+type ThemeMode = 'dark' | 'light' | 'system';
+
+function ThemeToggle() {
+  const { mode, setMode } = useTheme();
+  const cycle: Record<ThemeMode, ThemeMode> = { system: 'dark', dark: 'light', light: 'system' };
+  const icon = mode === 'dark' ? <Moon size={15} /> : mode === 'light' ? <Sun size={15} /> : <Monitor size={15} />;
+  const label = `Theme: ${mode}`;
+  return (
+    <button
+      onClick={() => setMode(cycle[mode])}
+      title={label}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 36, height: 36, borderRadius: 8,
+        background: 'none', border: `1px solid var(--color-border)`,
+        color: 'var(--color-muted)', cursor: 'pointer', transition,
+      }}
+    >
+      {icon}
+    </button>
   );
 }
 
@@ -98,6 +122,9 @@ export default function NavBar() {
 
       {/* Bottom — app identity + logout */}
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <ThemeToggle />
+        </div>
         {/* App switcher */}
         <div style={{ position: 'relative' }}>
           <button
@@ -105,7 +132,7 @@ export default function NavBar() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8, width: '100%',
               padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
-              background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.12)',
+              background: 'rgba(var(--color-cyan-rgb),0.05)', border: '1px solid rgba(var(--color-cyan-rgb),0.12)',
             }}
           >
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.green, boxShadow: `0 0 6px ${T.green}`, flexShrink: 0 }} />
@@ -129,7 +156,7 @@ export default function NavBar() {
                   style={{
                     display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px',
                     borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13,
-                    background: a.id === currentApp?.id ? 'rgba(0,212,255,0.08)' : 'transparent',
+                    background: a.id === currentApp?.id ? 'rgba(var(--color-cyan-rgb),0.08)' : 'transparent',
                     color: a.id === currentApp?.id ? T.cyan : T.muted,
                   }}>
                   {a.name}
@@ -152,8 +179,8 @@ export default function NavBar() {
             display: 'flex', alignItems: 'center', gap: 10,
             width: '100%', padding: '10px 14px',
             minHeight: 44, borderRadius: 10,
-            background: logoutHovered ? 'rgba(255,69,99,0.08)' : 'transparent',
-            border: `1px solid ${logoutHovered ? 'rgba(255,69,99,0.3)' : T.border}`,
+            background: logoutHovered ? 'rgba(var(--color-red-rgb),0.08)' : 'transparent',
+            border: `1px solid ${logoutHovered ? 'rgba(var(--color-red-rgb),0.3)' : T.border}`,
             color: logoutHovered ? T.red : T.muted,
             fontSize: 14, fontWeight: 500,
             cursor: 'pointer', transition,

@@ -46,7 +46,7 @@ function TimeRangeSelector({ value, onChange }: { value: string; onChange: (k: s
         }}
       >
         <span style={{
-          background: 'rgba(0,212,255,0.12)', border: '1px solid rgba(0,212,255,0.2)',
+          background: 'rgba(var(--color-cyan-rgb),0.12)', border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
           borderRadius: 6, padding: '2px 8px',
           fontSize: 11, color: T.cyan, fontWeight: 700, fontFamily: T.fontM,
         }}>
@@ -72,7 +72,7 @@ function TimeRangeSelector({ value, onChange }: { value: string; onChange: (k: s
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   width: '100%', padding: '8px 12px', borderRadius: 8,
-                  background: active ? 'rgba(0,212,255,0.08)' : 'transparent',
+                  background: active ? 'rgba(var(--color-cyan-rgb),0.08)' : 'transparent',
                   border: 'none', cursor: 'pointer', transition,
                 }}
               >
@@ -218,15 +218,15 @@ export default function TraceExplorer() {
             }}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              background: 'rgba(123,95,255,0.1)',
-              border: '1px solid rgba(123,95,255,0.25)',
+              background: 'rgba(var(--color-purple-rgb),0.1)',
+              border: '1px solid rgba(var(--color-purple-rgb),0.25)',
               color: T.purple, borderRadius: 10,
               padding: '10px 18px', fontSize: 13, fontWeight: 600,
               cursor: 'pointer', transition, fontFamily: T.fontM,
               flexShrink: 0,
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(123,95,255,0.18)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(123,95,255,0.1)'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(var(--color-purple-rgb),0.18)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(var(--color-purple-rgb),0.1)'; }}
           >
             <Download size={14} strokeWidth={1.5} />
             Export CSV
@@ -272,7 +272,7 @@ export default function TraceExplorer() {
                     ? s === 'ERROR' ? T.red : s === 'OK' ? T.green : T.cyan
                     : T.border}`,
                   background: filterStatus === s
-                    ? s === 'ERROR' ? 'rgba(255,69,99,0.1)' : s === 'OK' ? 'rgba(0,232,135,0.1)' : 'rgba(0,212,255,0.1)'
+                    ? s === 'ERROR' ? 'rgba(var(--color-red-rgb),0.1)' : s === 'OK' ? 'rgba(var(--color-green-rgb),0.1)' : 'rgba(var(--color-cyan-rgb),0.1)'
                     : 'transparent',
                   color: filterStatus === s
                     ? s === 'ERROR' ? T.red : s === 'OK' ? T.green : T.cyan
@@ -321,7 +321,7 @@ export default function TraceExplorer() {
           <button
             onClick={() => { setStatus('ALL'); setFeature('ALL'); setSearch(''); setTimeRange('1d'); }}
             style={{
-              background: 'rgba(0,212,255,0.1)', border: `1px solid rgba(0,212,255,0.25)`,
+              background: 'rgba(var(--color-cyan-rgb),0.1)', border: `1px solid rgba(var(--color-cyan-rgb),0.25)`,
               color: T.cyan, borderRadius: 8, padding: '8px 18px',
               fontSize: 13, cursor: 'pointer', fontFamily: T.fontM, transition,
             }}
@@ -362,16 +362,16 @@ export default function TraceExplorer() {
                   display: 'grid', gridTemplateColumns: COLS,
                   columnGap: 20,
                   padding: '14px 20px',
-                  borderBottom: idx < pageTraces.length - 1 ? `1px solid rgba(46,61,84,0.4)` : 'none',
+                  borderBottom: idx < pageTraces.length - 1 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none',
                   cursor: 'pointer', transition,
-                  background: hoveredId === t.traceId ? 'rgba(0,212,255,0.04)' : 'transparent',
+                  background: hoveredId === t.traceId ? 'rgba(var(--color-cyan-rgb),0.04)' : 'transparent',
                   alignItems: 'center',
                 }}
               >
                 <span style={{
                   fontFamily: T.fontM, fontSize: 11,
-                  background: 'rgba(0,212,255,0.08)',
-                  border: '1px solid rgba(0,212,255,0.2)',
+                  background: 'rgba(var(--color-cyan-rgb),0.08)',
+                  border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
                   borderRadius: 6, padding: '3px 8px',
                   color: T.cyan, display: 'inline-block',
                   whiteSpace: 'nowrap',
