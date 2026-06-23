@@ -6,6 +6,7 @@ import ApiKeys from './pages/ApiKeys';
 import Apps from './pages/Apps';
 import Sessions from './pages/Sessions';
 import Settings from './pages/Settings';
+import Docs from './pages/Docs';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import NavBar from './components/NavBar';
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/keys"             element={<Protected><ApiKeys /></Protected>} />
             <Route path="/apps"             element={<Protected><Apps /></Protected>} />
             <Route path="/settings"         element={<Protected><Settings /></Protected>} />
+            <Route path="/docs"             element={<Docs />} />
             <Route path="*"                 element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

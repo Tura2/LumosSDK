@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Activity, GitBranch, Key, LogOut, Boxes, ChevronDown, Moon, Sun, Monitor, SlidersHorizontal } from 'lucide-react';
+import { LayoutDashboard, Activity, GitBranch, Key, LogOut, Boxes, ChevronDown, Moon, Sun, Monitor, SlidersHorizontal, BookOpen } from 'lucide-react';
 import { T, gradientText, transition } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 import { useApps } from '../app/AppContext';
@@ -13,6 +13,7 @@ const links = [
   { to: '/keys',     label: 'API Keys',  icon: <Key               size={18} strokeWidth={1.5} /> },
   { to: '/apps',     label: 'Apps',      icon: <Boxes             size={18} strokeWidth={1.5} /> },
   { to: '/settings', label: 'Settings',  icon: <SlidersHorizontal size={18} strokeWidth={1.5} /> },
+  { to: '/docs',     label: 'Docs',      icon: <BookOpen          size={18} strokeWidth={1.5} /> },
 ];
 
 function NavItem({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
