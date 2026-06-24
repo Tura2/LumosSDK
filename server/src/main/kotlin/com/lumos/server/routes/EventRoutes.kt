@@ -18,7 +18,11 @@ fun Routing.eventRoutes() {
         val appId = KeyService.verify(apiKey)
             ?: return@post call.respond(HttpStatusCode.Unauthorized)
         val body = call.receiveText()
-        val events = Json.decodeFromString<List<IncomingEnvelope>>(body)
+        val events = try {
+            Json.decodeFromString<List<IncomingEnvelope>>(body)
+        } catch (e: Exception) {
+            return@post call.respond(HttpStatusCode.BadRequest, "Invalid event payload")
+        }
         IngestionService.ingest(appId, events)
         call.respond(HttpStatusCode.OK, IngestResponse(accepted = events.size))
     }

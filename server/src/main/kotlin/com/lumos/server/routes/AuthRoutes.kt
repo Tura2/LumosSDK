@@ -23,6 +23,12 @@ import java.util.UUID
 fun Routing.authRoutes() {
     post("/api/auth/register") {
         val req = call.receive<AuthRequest>()
+        if (req.email.isBlank() || !req.email.contains("@")) {
+            return@post call.respond(HttpStatusCode.BadRequest, "Invalid email")
+        }
+        if (req.password.length < 8) {
+            return@post call.respond(HttpStatusCode.BadRequest, "Password must be at least 8 characters")
+        }
         val existing = transaction { Accounts.select { Accounts.email eq req.email }.count() }
         if (existing > 0) return@post call.respond(HttpStatusCode.Conflict, "Email already registered")
         val accountId = UUID.randomUUID().toString()

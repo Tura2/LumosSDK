@@ -49,7 +49,7 @@ object IngestionService {
             val hourBucket = now.truncatedTo(ChronoUnit.HOURS)
 
             when (env.type) {
-                "TRACE" -> {
+                "TRACE" -> runCatching {
                     val p = json.decodeFromString<TracePayload>(env.payload)
                     Traces.insert {
                         it[traceId] = p.traceId; it[Traces.appId] = appId
@@ -76,15 +76,15 @@ object IngestionService {
                         tokensOut = (p.tokensOut ?: 0).toLong(),
                         latency = p.latencyMs ?: 0L,
                     )
-                }
-                "SPAN" -> {
+                }.getOrElse { return@forEach }
+                "SPAN" -> runCatching {
                     val p = json.decodeFromString<SpanPayload>(env.payload)
                     Spans.insert {
                         it[spanId] = p.spanId; it[traceId] = p.traceId
                         it[name] = p.name; it[durationMs] = p.durationMs; it[startedAt] = now
                     }
-                }
-                "FEEDBACK" -> {
+                }.getOrElse { return@forEach }
+                "FEEDBACK" -> runCatching {
                     val p = json.decodeFromString<FeedbackPayload>(env.payload)
                     FeedbackTable.insert {
                         it[id] = UUID.randomUUID().toString(); it[traceId] = p.traceId
@@ -101,7 +101,7 @@ object IngestionService {
                             thumbsDown = if (!isUp) 1 else 0,
                         )
                     }
-                }
+                }.getOrElse { return@forEach }
             }
         }
     }

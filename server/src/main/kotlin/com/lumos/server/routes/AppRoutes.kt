@@ -42,6 +42,12 @@ fun Routing.appRoutes() {
         post("/api/apps") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val req = call.receive<CreateAppRequest>()
+            if (req.name.isBlank()) {
+                return@post call.respond(HttpStatusCode.BadRequest, "App name is required")
+            }
+            if (req.packageName.isBlank()) {
+                return@post call.respond(HttpStatusCode.BadRequest, "Package name is required")
+            }
             val appId = UUID.randomUUID().toString()
             transaction {
                 Apps.insert {
