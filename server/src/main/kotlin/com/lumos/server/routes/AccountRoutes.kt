@@ -71,6 +71,7 @@ fun Routing.accountRoutes() {
         delete("/api/account") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             transaction {
+                connection.prepareStatement("PRAGMA foreign_keys = ON", false).executeUpdate()
                 val appIds = Apps.select { Apps.accountId eq accountId }.map { it[Apps.id] }
                 appIds.forEach { appId ->
                     val traceIds = Traces.select { Traces.appId eq appId }.map { it[Traces.traceId] }

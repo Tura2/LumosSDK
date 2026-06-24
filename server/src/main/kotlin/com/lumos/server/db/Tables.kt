@@ -51,6 +51,8 @@ object Traces : Table("traces") {
     val sdkVersion = varchar("sdk_version", 50).nullable()
     val appVersion = varchar("app_version", 50).nullable()
     override val primaryKey = PrimaryKey(traceId)
+    val appIdIndex = index("idx_traces_app_id", false, appId)
+    val sessionIdIndex = index("idx_traces_session_id", false, sessionId)
 }
 
 object Spans : Table("spans") {
@@ -60,6 +62,7 @@ object Spans : Table("spans") {
     val durationMs = long("duration_ms")
     val startedAt = datetime("started_at")
     override val primaryKey = PrimaryKey(spanId)
+    val traceIdIndex = index("idx_spans_trace_id", false, traceId)
 }
 
 object FeedbackTable : Table("feedback") {
@@ -68,6 +71,7 @@ object FeedbackTable : Table("feedback") {
     val kind = varchar("kind", 20)
     val createdAt = datetime("created_at")
     override val primaryKey = PrimaryKey(id)
+    val traceIdIndex = index("idx_feedback_trace_id", false, traceId)
 }
 
 object IngestedEvents : Table("ingested_events") {
@@ -88,4 +92,5 @@ object StatsHourly : Table("stats_hourly") {
     val thumbsUp = integer("thumbs_up").default(0)
     val thumbsDown = integer("thumbs_down").default(0)
     override val primaryKey = PrimaryKey(appId, feature, hourBucket)
+    val appBucketIndex = index("idx_stats_app_bucket", false, appId, hourBucket)
 }

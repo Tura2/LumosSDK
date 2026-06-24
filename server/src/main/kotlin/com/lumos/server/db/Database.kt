@@ -40,6 +40,7 @@ object DatabaseFactory {
             Database.connect(url, driver = "org.sqlite.JDBC")
         }
         transaction {
+            connection.prepareStatement("PRAGMA foreign_keys = ON", false).executeUpdate()
             SchemaUtils.createMissingTablesAndColumns(
                 Accounts, Apps, ApiKeys, Traces, Spans,
                 FeedbackTable, IngestedEvents, StatsHourly
