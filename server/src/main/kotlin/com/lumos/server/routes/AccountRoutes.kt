@@ -2,6 +2,7 @@ package com.lumos.server.routes
 
 import com.lumos.server.db.Accounts
 import com.lumos.server.db.Apps
+import com.lumos.server.dto.AccountDto
 import com.lumos.server.db.ApiKeys
 import com.lumos.server.db.Traces
 import com.lumos.server.db.Spans
@@ -30,10 +31,10 @@ fun Routing.accountRoutes() {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val account = transaction {
                 Accounts.select { Accounts.id eq accountId }.singleOrNull()?.let { row ->
-                    mapOf(
-                        "id" to row[Accounts.id],
-                        "email" to row[Accounts.email],
-                        "name" to (row[Accounts.name] ?: ""),
+                    AccountDto(
+                        id = row[Accounts.id],
+                        email = row[Accounts.email],
+                        name = row[Accounts.name] ?: "",
                     )
                 }
             } ?: return@get call.respond(HttpStatusCode.NotFound)
@@ -50,10 +51,10 @@ fun Routing.accountRoutes() {
                         if (req.email != null) it[email] = req.email
                     }
                     Accounts.select { Accounts.id eq accountId }.singleOrNull()?.let { row ->
-                        mapOf(
-                            "id" to row[Accounts.id],
-                            "email" to row[Accounts.email],
-                            "name" to (row[Accounts.name] ?: ""),
+                        AccountDto(
+                            id = row[Accounts.id],
+                            email = row[Accounts.email],
+                            name = row[Accounts.name] ?: "",
                         )
                     }
                 } ?: return@patch call.respond(HttpStatusCode.NotFound)

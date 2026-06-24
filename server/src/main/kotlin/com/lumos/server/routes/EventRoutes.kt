@@ -1,5 +1,6 @@
 package com.lumos.server.routes
 
+import com.lumos.server.dto.*
 import com.lumos.server.service.IngestionService
 import com.lumos.server.service.IncomingEnvelope
 import com.lumos.server.service.KeyService
@@ -19,7 +20,7 @@ fun Routing.eventRoutes() {
         val body = call.receiveText()
         val events = Json.decodeFromString<List<IncomingEnvelope>>(body)
         IngestionService.ingest(appId, events)
-        call.respond(HttpStatusCode.OK, mapOf("accepted" to events.size))
+        call.respond(HttpStatusCode.OK, IngestResponse(accepted = events.size))
     }
 
     get("/v0/config") {
@@ -27,6 +28,6 @@ fun Routing.eventRoutes() {
             ?: return@get call.respond(HttpStatusCode.Unauthorized)
         KeyService.verify(apiKey)
             ?: return@get call.respond(HttpStatusCode.Unauthorized)
-        call.respond(mapOf("active" to true))
+        call.respond(ConfigResponse(active = true))
     }
 }

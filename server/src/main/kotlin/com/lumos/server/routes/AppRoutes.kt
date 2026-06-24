@@ -1,6 +1,7 @@
 package com.lumos.server.routes
 
 import com.lumos.server.db.Apps
+import com.lumos.server.dto.*
 import com.lumos.server.service.AppService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -27,7 +28,12 @@ fun Routing.appRoutes() {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val apps = transaction {
                 Apps.select { Apps.accountId eq accountId }.map {
-                    mapOf("id" to it[Apps.id], "name" to it[Apps.name], "packageName" to it[Apps.packageName])
+                    AppDto(
+                        id = it[Apps.id],
+                        name = it[Apps.name],
+                        packageName = it[Apps.packageName],
+                        debug = it[Apps.debug],
+                    )
                 }
             }
             call.respond(apps)
@@ -46,7 +52,7 @@ fun Routing.appRoutes() {
                     it[createdAt] = LocalDateTime.now()
                 }
             }
-            call.respond(HttpStatusCode.Created, mapOf("id" to appId))
+            call.respond(HttpStatusCode.Created, CreatedAppDto(id = appId))
         }
 
         patch("/api/apps/{appId}") {
@@ -62,7 +68,12 @@ fun Routing.appRoutes() {
                     if (req.debug != null) it[debug] = req.debug
                 }
                 Apps.select { Apps.id eq appId }.singleOrNull()?.let { row ->
-                    mapOf("id" to row[Apps.id], "name" to row[Apps.name], "packageName" to row[Apps.packageName])
+                    AppDto(
+                        id = row[Apps.id],
+                        name = row[Apps.name],
+                        packageName = row[Apps.packageName],
+                        debug = row[Apps.debug],
+                    )
                 }
             } ?: return@patch call.respond(HttpStatusCode.NotFound)
             call.respond(updated)

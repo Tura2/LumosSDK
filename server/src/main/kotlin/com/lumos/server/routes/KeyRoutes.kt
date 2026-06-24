@@ -2,6 +2,7 @@ package com.lumos.server.routes
 
 import com.lumos.server.db.ApiKeys
 import com.lumos.server.db.Apps
+import com.lumos.server.dto.CreatedKeyDto
 import com.lumos.server.service.KeyService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -33,7 +34,7 @@ fun Routing.keyRoutes() {
             if (!owns) return@post call.respond(HttpStatusCode.Forbidden)
             val req = call.receive<CreateKeyRequest>()
             val (keyId, secret) = KeyService.create(appId, req.name)
-            call.respond(HttpStatusCode.Created, mapOf("id" to keyId, "secret" to secret))
+            call.respond(HttpStatusCode.Created, CreatedKeyDto(id = keyId, secret = secret))
         }
 
         delete("/api/apps/{appId}/keys/{keyId}") {
