@@ -67,7 +67,7 @@ export default function Settings() {
         const activeKey = r.data.find((k: { revoked: boolean; id: string }) => !k.revoked);
         setApiKey(activeKey?.id ?? '');
       }).catch(() => {});
-      setServerUrl(window.location.origin.replace(':5173', ':8080'));
+      setServerUrl(import.meta.env.VITE_API_URL ?? 'http://localhost:8080');
       setDebug(currentApp?.debug ?? false);
     }
   }, [currentAppId, currentApp]);

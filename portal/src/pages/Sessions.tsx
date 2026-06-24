@@ -45,6 +45,7 @@ function SessionCard({ session, appId }: { session: SessionSummary; appId: strin
       try {
         const res = await api.get(`/api/apps/${appId}/sessions/${session.sessionId}/traces`);
         setTraces(res.data);
+      } catch {
       } finally {
         setLoading(false);
       }
@@ -170,12 +171,15 @@ export default function Sessions() {
   const { currentAppId } = useApps();
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentAppId) { setLoading(false); return; }
     setLoading(true);
+    setError(null);
     api.get(`/api/apps/${currentAppId}/sessions`)
       .then(r => setSessions(r.data))
+      .catch(() => setError('Failed to load sessions.'))
       .finally(() => setLoading(false));
   }, [currentAppId]);
 
@@ -189,7 +193,11 @@ export default function Sessions() {
         titleGradient="linear-gradient(135deg, #E8F2FF 0%, #7B5FFF 100%)"
       />
 
-      {loading ? (
+      {error ? (
+        <div style={{ ...cardStyle, padding: 48, textAlign: 'center', color: T.red, fontSize: 14 }}>
+          {error}
+        </div>
+      ) : loading ? (
         <div style={{ ...cardStyle, padding: 48, textAlign: 'center', color: T.muted, fontSize: 14 }}>
           Loading sessions…
         </div>
