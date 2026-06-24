@@ -28,3 +28,13 @@ data class IngestResponse(val accepted: Int)
 
 @Serializable
 data class ConfigResponse(val active: Boolean)
+
+@Serializable
+data class SessionTraceDto(
+    val traceId: String,
+    val feature: String,
+    val status: String,
+    val model: String,
+    val latencyMs: String,
+    val startedAt: String,
+)

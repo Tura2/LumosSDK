@@ -2,6 +2,7 @@ package com.lumos.server.routes
 
 import com.lumos.server.db.Apps
 import com.lumos.server.db.Traces
+import com.lumos.server.dto.SessionTraceDto
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -81,13 +82,13 @@ fun Routing.sessionRoutes() {
                 Traces.select { (Traces.appId eq appId) and (Traces.sessionId eq sessionId) }
                     .orderBy(Traces.startedAt)
                     .map { row ->
-                        mapOf(
-                            "traceId" to row[Traces.traceId],
-                            "feature" to row[Traces.feature],
-                            "status" to row[Traces.status],
-                            "model" to (row[Traces.model] ?: ""),
-                            "latencyMs" to (row[Traces.latencyMs]?.toString() ?: ""),
-                            "startedAt" to row[Traces.startedAt].toString(),
+                        SessionTraceDto(
+                            traceId = row[Traces.traceId],
+                            feature = row[Traces.feature],
+                            status = row[Traces.status],
+                            model = row[Traces.model] ?: "",
+                            latencyMs = row[Traces.latencyMs]?.toString() ?: "",
+                            startedAt = row[Traces.startedAt].toString(),
                         )
                     }
             }
