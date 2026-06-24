@@ -14,8 +14,8 @@ import java.time.Instant
 import java.util.UUID
 
 object Lumos {
-    private lateinit var ctx: Context
-    private lateinit var config: LumosConfig
+    @Volatile private var ctx: Context? = null
+    @Volatile private var config: LumosConfig? = null
     private var listener: LumosListener? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -24,6 +24,9 @@ object Lumos {
         config = LumosConfig().apply(block)
         return this
     }
+
+    private fun requireCtx(): Context = ctx ?: error("Lumos.init() has not been called.")
+    private fun requireConfig(): LumosConfig = config ?: error("Lumos.init() has not been called.")
 
     fun startTrace(feature: String): Trace = Trace(feature = feature)
 
@@ -34,7 +37,7 @@ object Lumos {
         }
         val envelope = buildEnvelope("FEEDBACK", Json.encodeToString(FeedbackPayload(traceId = traceId, kind = kind)))
         scope.launch {
-            LumosDatabase.get(ctx).eventDao().insert(PendingEvent(eventId = envelope.eventId, payloadJson = Json.encodeToString(envelope)))
+            LumosDatabase.get(requireCtx()).eventDao().insert(PendingEvent(eventId = envelope.eventId, payloadJson = Json.encodeToString(envelope)))
             triggerUpload()
         }
     }
@@ -64,7 +67,7 @@ object Lumos {
             }
         }
         scope.launch {
-            val dao = LumosDatabase.get(ctx).eventDao()
+            val dao = LumosDatabase.get(requireCtx()).eventDao()
             envelopes.forEach { dao.insert(PendingEvent(eventId = it.eventId, payloadJson = Json.encodeToString(it))) }
             triggerUpload()
         }
@@ -81,8 +84,8 @@ object Lumos {
         type = type,
         timestamp = Instant.now().toString(),
         sessionId = SessionManager.currentSessionId(),
-        appPackage = ctx.packageName,
-        appVersion = DeviceInfo.appVersion(ctx),
+        appPackage = requireCtx().packageName,
+        appVersion = DeviceInfo.appVersion(requireCtx()),
         sdkVersion = "0.1.0",
         deviceModel = DeviceInfo.model(),
         androidVersion = DeviceInfo.androidVersion(),
@@ -90,6 +93,6 @@ object Lumos {
     )
 
     private fun triggerUpload() {
-        UploadWorker.enqueue(ctx, config.serverUrl, config.apiKey)
+        UploadWorker.enqueue(requireCtx(), requireConfig().serverUrl, requireConfig().apiKey)
     }
 }
