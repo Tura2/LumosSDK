@@ -18,4 +18,7 @@ interface EventDao {
 
     @Query("SELECT COUNT(*) FROM pending_events")
     suspend fun count(): Int
+
+    @Query("DELETE FROM pending_events WHERE eventId NOT IN (SELECT eventId FROM pending_events ORDER BY rowid DESC LIMIT 1000)")
+    suspend fun trimToMax()
 }

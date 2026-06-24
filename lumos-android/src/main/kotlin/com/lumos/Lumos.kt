@@ -37,7 +37,9 @@ object Lumos {
         }
         val envelope = buildEnvelope("FEEDBACK", Json.encodeToString(FeedbackPayload(traceId = traceId, kind = kind)))
         scope.launch {
-            LumosDatabase.get(requireCtx()).eventDao().insert(PendingEvent(eventId = envelope.eventId, payloadJson = Json.encodeToString(envelope)))
+            val dao = LumosDatabase.get(requireCtx()).eventDao()
+            dao.trimToMax()
+            dao.insert(PendingEvent(eventId = envelope.eventId, payloadJson = Json.encodeToString(envelope)))
             triggerUpload()
         }
     }
@@ -68,6 +70,7 @@ object Lumos {
         }
         scope.launch {
             val dao = LumosDatabase.get(requireCtx()).eventDao()
+            dao.trimToMax()
             envelopes.forEach { dao.insert(PendingEvent(eventId = it.eventId, payloadJson = Json.encodeToString(it))) }
             triggerUpload()
         }

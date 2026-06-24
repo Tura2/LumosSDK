@@ -38,7 +38,7 @@ class UploadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, java.util.concurrent.TimeUnit.SECONDS)
                 .build()
             WorkManager.getInstance(context)
-                .enqueueUniqueWork("lumos_upload", ExistingWorkPolicy.REPLACE, request)
+                .enqueueUniqueWork("lumos_upload", ExistingWorkPolicy.KEEP, request)
         }
     }
 }
