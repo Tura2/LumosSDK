@@ -1,6 +1,5 @@
 package com.lumos.server.routes
 
-import com.lumos.server.db.Apps
 import com.lumos.server.service.StatsService
 import com.lumos.server.service.Totals
 import io.ktor.http.*
@@ -10,9 +9,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
 @Serializable
@@ -62,6 +58,3 @@ fun Routing.statsRoutes() {
     }
 }
 
-private fun ownsApp(accountId: String, appId: String): Boolean = transaction {
-    Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0
-}

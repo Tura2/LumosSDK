@@ -11,7 +11,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -64,8 +63,7 @@ fun Routing.appRoutes() {
         patch("/api/apps/{appId}") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
-            val owns = transaction { Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0 }
-            if (!owns) return@patch call.respond(HttpStatusCode.Forbidden)
+            if (!ownsApp(accountId, appId)) return@patch call.respond(HttpStatusCode.Forbidden)
             val req = call.receive<UpdateAppRequest>()
             val updated = transaction {
                 Apps.update({ Apps.id eq appId }) {
@@ -88,8 +86,7 @@ fun Routing.appRoutes() {
         delete("/api/apps/{appId}") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
-            val owns = transaction { Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0 }
-            if (!owns) return@delete call.respond(HttpStatusCode.Forbidden)
+            if (!ownsApp(accountId, appId)) return@delete call.respond(HttpStatusCode.Forbidden)
             AppService.delete(appId)
             call.respond(HttpStatusCode.NoContent)
         }

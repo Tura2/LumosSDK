@@ -29,10 +29,7 @@ fun Routing.sessionRoutes() {
         get("/api/apps/{appId}/sessions") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
-            val owns = transaction {
-                Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0
-            }
-            if (!owns) return@get call.respond(HttpStatusCode.Forbidden)
+            if (!ownsApp(accountId, appId)) return@get call.respond(HttpStatusCode.Forbidden)
 
             // Validate UUID format to prevent SQL injection in the raw exec below
             try { UUID.fromString(appId) } catch (_: IllegalArgumentException) {
@@ -78,10 +75,7 @@ fun Routing.sessionRoutes() {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
             val sessionId = call.parameters["sessionId"]!!
-            val owns = transaction {
-                Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0
-            }
-            if (!owns) return@get call.respond(HttpStatusCode.Forbidden)
+            if (!ownsApp(accountId, appId)) return@get call.respond(HttpStatusCode.Forbidden)
 
             val traces = transaction {
                 Traces.select { (Traces.appId eq appId) and (Traces.sessionId eq sessionId) }

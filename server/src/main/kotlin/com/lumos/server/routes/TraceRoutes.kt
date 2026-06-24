@@ -48,8 +48,7 @@ fun Routing.traceRoutes() {
         get("/api/apps/{appId}/traces") {
             val accountId = call.principal<JWTPrincipal>()!!.getClaim("accountId", String::class)!!
             val appId = call.parameters["appId"]!!
-            val owns = transaction { Apps.select { (Apps.id eq appId) and (Apps.accountId eq accountId) }.count() > 0 }
-            if (!owns) return@get call.respond(HttpStatusCode.Forbidden)
+            if (!ownsApp(accountId, appId)) return@get call.respond(HttpStatusCode.Forbidden)
             val traces = transaction {
                 Traces.select { Traces.appId eq appId }
                     .orderBy(Traces.startedAt, SortOrder.DESC)
