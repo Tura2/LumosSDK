@@ -11,7 +11,9 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.routing.*
+import kotlin.time.Duration.Companion.minutes
 
 fun main(args: Array<String>) = EngineMain.main(args)
 
@@ -36,6 +38,11 @@ fun Application.module() {
             validate { cred ->
                 if (cred.payload.getClaim("accountId").asString() != null) JWTPrincipal(cred.payload) else null
             }
+        }
+    }
+    install(RateLimit) {
+        register(RateLimitName("login")) {
+            rateLimiter(limit = 10, refillPeriod = 1.minutes)
         }
     }
     routing {

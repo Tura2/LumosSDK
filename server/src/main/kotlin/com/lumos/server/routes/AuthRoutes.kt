@@ -7,6 +7,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.insert
@@ -43,16 +44,18 @@ fun Routing.authRoutes() {
         call.respond(AuthResponse(generateToken(call, accountId), req.email))
     }
 
-    post("/api/auth/login") {
-        val req = call.receive<AuthRequest>()
-        val row = transaction {
-            Accounts.select { Accounts.email eq req.email }.singleOrNull()
-        } ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")
+    rateLimit(RateLimitName("login")) {
+        post("/api/auth/login") {
+            val req = call.receive<AuthRequest>()
+            val row = transaction {
+                Accounts.select { Accounts.email eq req.email }.singleOrNull()
+            } ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")
 
-        if (!BCrypt.checkpw(req.password, row[Accounts.passwordHash])) {
-            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")
+            if (!BCrypt.checkpw(req.password, row[Accounts.passwordHash])) {
+                return@post call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")
+            }
+            call.respond(AuthResponse(generateToken(call, row[Accounts.id]), req.email))
         }
-        call.respond(AuthResponse(generateToken(call, row[Accounts.id]), req.email))
     }
 }
 

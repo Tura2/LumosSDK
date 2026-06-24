@@ -17,6 +17,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:2.3.8")
     implementation("io.ktor:ktor-server-auth-jwt:2.3.8")
     implementation("io.ktor:ktor-server-cors:2.3.8")
+    implementation("io.ktor:ktor-server-rate-limit:2.3.8")
     implementation("io.ktor:ktor-client-cio:2.3.8")
     implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
     implementation("org.jetbrains.exposed:exposed-core:0.44.1")
