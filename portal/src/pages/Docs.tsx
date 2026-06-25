@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Copy as CopyIcon, Check as CheckIcon, ArrowLeft } from 'lucide-react';
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
 
@@ -84,9 +85,11 @@ function CodeBlock({ code }: { code: string }) {
           borderRadius: 6, padding: '4px 10px', fontSize: 11,
           cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace",
           transition: 'all 200ms ease', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 5,
         }}
       >
-        {copied ? '✓ Copied' : 'Copy'}
+        {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
+        {copied ? 'Copied' : 'Copy'}
       </button>
     </div>
   );
@@ -440,12 +443,29 @@ export default function Docs() {
         </div>
 
         {/* Nav footer */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid #1A2C44', flexShrink: 0 }}>
-          <span style={{
-            display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 8px',
-            borderRadius: 20, background: 'rgba(0,212,255,0.08)',
-            color: '#2A5070', border: '1px solid rgba(0,212,255,0.15)',
-          }}>v0.1.0</span>
+        <div style={{ borderTop: '1px solid #1A2C44', flexShrink: 0 }}>
+          <a
+            href="/"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px',
+              fontSize: 13, color: '#3A5470',
+              textDecoration: 'none', transition: 'color 180ms ease',
+              borderBottom: '1px solid #1A2C44',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#00D4FF')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#3A5470')}
+          >
+            <ArrowLeft size={14} />
+            Back to Portal
+          </a>
+          <div style={{ padding: '10px 20px' }}>
+            <span style={{
+              display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 8px',
+              borderRadius: 20, background: 'rgba(0,212,255,0.08)',
+              color: '#2A5070', border: '1px solid rgba(0,212,255,0.15)',
+            }}>v0.1.0</span>
+          </div>
         </div>
       </nav>
 
