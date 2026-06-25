@@ -17,8 +17,9 @@ export default function ApiKeys() {
   const [newSecret, setNewSecret] = useState<string | null>(null);
   const [keyName, setKeyName]     = useState('');
   const [showForm, setShowForm]   = useState(false);
-  const [copied, setCopied]       = useState(false);
-  const [inputFocused, setFocused]= useState(false);
+  const [copied, setCopied]           = useState(false);
+  const [inputFocused, setFocused]    = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const loadKeys = async (id: string) => {
     const r = await api.get(`/api/apps/${id}/keys`);
@@ -230,7 +231,7 @@ export default function ApiKeys() {
             )}
             {k.revoked && (
               <button
-                onClick={() => deleteKey(k.id)}
+                onClick={() => setConfirmDeleteId(k.id)}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(var(--color-red-rgb),0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 style={{
@@ -254,6 +255,84 @@ export default function ApiKeys() {
           No API keys yet. Create one to connect your app.
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      {confirmDeleteId && (() => {
+        const key = keys.find(k => k.id === confirmDeleteId);
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 100,
+              background: 'rgba(4,8,16,0.75)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(4px)',
+            }}
+            onClick={() => setConfirmDeleteId(null)}
+          >
+            <div
+              style={{
+                background: 'var(--color-card)', border: '1px solid var(--color-border)',
+                borderRadius: 16, padding: '28px 28px 24px', maxWidth: 400, width: '90%',
+                boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Icon + title */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: 'rgba(var(--color-red-rgb),0.1)',
+                  border: '1px solid rgba(var(--color-red-rgb),0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Trash2 size={18} color={T.red} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: T.text, fontFamily: T.fontD }}>
+                    Delete API key?
+                  </p>
+                  {key && (
+                    <p style={{ fontSize: 12, color: T.muted, marginTop: 3, fontFamily: T.fontM }}>
+                      {key.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, marginBottom: 24 }}>
+                This will permanently remove the key. This action cannot be undone.
+              </p>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  style={{
+                    background: 'none', border: `1px solid var(--color-border)`,
+                    color: T.muted, borderRadius: 8, padding: '8px 18px',
+                    cursor: 'pointer', fontSize: 13, transition,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    await deleteKey(confirmDeleteId);
+                    setConfirmDeleteId(null);
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: T.red, border: 'none',
+                    color: '#fff', borderRadius: 8, padding: '8px 18px',
+                    cursor: 'pointer', fontSize: 13, fontWeight: 700, transition,
+                  }}
+                >
+                  <Trash2 size={13} /> Delete key
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
