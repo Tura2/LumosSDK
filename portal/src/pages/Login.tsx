@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { api } from '../api/client';
-import { T, cardStyle, gradientText } from '../theme';
+import { T, cardStyle, gradientText, transition } from '../theme';
 import { useAuth } from '../auth/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const nav = useNavigate();
   const { setToken } = useAuth();
@@ -115,12 +116,28 @@ export default function Login() {
           <label htmlFor="password" style={{ display: 'block', fontSize: 12, fontWeight: 500, color: T.muted, marginBottom: 6 }}>
             Password
           </label>
-          <input
-            id="password"
-            value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="••••••••"
-            style={inputStyle} type="password" required
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              id="password"
+              value={password} onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              style={{ ...inputStyle, paddingRight: 42 }}
+              type={showPassword ? 'text' : 'password'} required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              style={{
+                position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: T.muted, display: 'flex', alignItems: 'center', padding: 0, transition,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = T.text)}
+              onMouseLeave={e => (e.currentTarget.style.color = T.muted)}
+            >
+              {showPassword ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
+            </button>
+          </div>
         </div>
 
         <button type="submit" style={btnStyle}>Sign in</button>

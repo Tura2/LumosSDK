@@ -109,11 +109,11 @@ const PAGE_SIZE = 10;
 const COLS = '1.6fr 0.9fr 1fr 0.9fr 0.9fr 0.8fr 1.1fr';
 
 function DeviceBadge({ device }: { device?: DeviceInfo }) {
-  if (!device) return <span style={{ color: '#6A7D9A', fontSize: 12 }}>—</span>;
+  if (!device) return <span style={{ color: T.muted, fontSize: 12 }}>—</span>;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11 }}>
-      <Smartphone size={12} color="#3DDC84" strokeWidth={1.5} />
-      <span style={{ color: '#3DDC84', fontFamily: "'JetBrains Mono', monospace" }}>{device.deviceModel}</span>
+      <Smartphone size={12} color={T.green} strokeWidth={1.5} />
+      <span style={{ color: T.green, fontFamily: T.fontM }}>{device.deviceModel}</span>
     </span>
   );
 }
@@ -187,23 +187,6 @@ export default function TraceExplorer() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <TimeRangeSelector value={timeRange} onChange={handleTimeRange} />
-
-          <button
-            onClick={() => setRefreshKey(k => k + 1)}
-            title="Refresh"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: 40, height: 40, borderRadius: 10,
-              background: T.card, border: `1px solid ${T.border}`,
-              color: T.muted, cursor: 'pointer', transition,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = T.cyan; e.currentTarget.style.borderColor = T.cyan; }}
-            onMouseLeave={e => { e.currentTarget.style.color = T.muted; e.currentTarget.style.borderColor = T.border; }}
-          >
-            <RefreshCw size={14} strokeWidth={1.5} />
-          </button>
-
           {traces.length > 0 && (
           <button
             onClick={() => {
@@ -247,7 +230,7 @@ export default function TraceExplorer() {
       {traces.length > 0 && (
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
           {/* Search */}
-          <div style={{ position: 'relative', flex: 1, minWidth: 180, maxWidth: 280 }}>
+          <div style={{ position: 'relative', minWidth: 180, maxWidth: 240 }}>
             <Search size={13} style={{
               position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
               color: T.muted, pointerEvents: 'none',
@@ -300,7 +283,7 @@ export default function TraceExplorer() {
             style={{
               padding: '7px 12px', borderRadius: 8, fontSize: 12,
               background: T.card, border: `1px solid ${filterFeature !== 'ALL' ? T.purple : T.border}`,
-              color: filterFeature !== 'ALL' ? '#A290FF' : T.muted,
+              color: filterFeature !== 'ALL' ? T.purple : T.muted,
               cursor: 'pointer', outline: 'none', fontFamily: T.fontM, transition,
             }}
           >
@@ -309,6 +292,25 @@ export default function TraceExplorer() {
               <option key={f} value={f} style={{ background: T.card }}>{f}</option>
             ))}
           </select>
+
+          {/* Time range */}
+          <TimeRangeSelector value={timeRange} onChange={handleTimeRange} />
+
+          {/* Refresh */}
+          <button
+            onClick={() => setRefreshKey(k => k + 1)}
+            title="Refresh"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 36, height: 36, borderRadius: 8,
+              background: T.card, border: `1px solid ${T.border}`,
+              color: T.muted, cursor: 'pointer', transition, flexShrink: 0,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = T.cyan; e.currentTarget.style.borderColor = T.cyan; }}
+            onMouseLeave={e => { e.currentTarget.style.color = T.muted; e.currentTarget.style.borderColor = T.border; }}
+          >
+            <RefreshCw size={13} strokeWidth={1.5} />
+          </button>
 
           {/* Result count */}
           <span style={{ fontSize: 12, color: T.muted, fontFamily: T.fontM, marginLeft: 'auto' }}>
@@ -370,7 +372,7 @@ export default function TraceExplorer() {
                   display: 'grid', gridTemplateColumns: COLS,
                   columnGap: 20,
                   padding: '14px 20px',
-                  borderBottom: idx < pageTraces.length - 1 ? `1px solid rgba(var(--color-border-rgb),0.4)` : 'none',
+                  borderBottom: idx < pageTraces.length - 1 ? `1px solid ${T.border}` : 'none',
                   cursor: 'pointer', transition,
                   background: hoveredId === t.traceId ? 'rgba(var(--color-cyan-rgb),0.04)' : 'transparent',
                   alignItems: 'center',

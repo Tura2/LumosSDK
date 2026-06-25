@@ -6,12 +6,15 @@ import { useAuth } from '../auth/AuthContext';
 import { useApps } from '../app/AppContext';
 import { useTheme } from '../ThemeContext';
 
-const links = [
+const mainLinks = [
   { to: '/',         label: 'Dashboard', icon: <LayoutDashboard   size={18} strokeWidth={1.5} /> },
   { to: '/traces',   label: 'Traces',    icon: <Activity          size={18} strokeWidth={1.5} /> },
   { to: '/sessions', label: 'Sessions',  icon: <GitBranch         size={18} strokeWidth={1.5} /> },
   { to: '/keys',     label: 'API Keys',  icon: <Key               size={18} strokeWidth={1.5} /> },
   { to: '/apps',     label: 'Apps',      icon: <Boxes             size={18} strokeWidth={1.5} /> },
+];
+
+const bottomLinks = [
   { to: '/settings', label: 'Settings',  icon: <SlidersHorizontal size={18} strokeWidth={1.5} /> },
   { to: '/docs',     label: 'Docs',      icon: <BookOpen          size={18} strokeWidth={1.5} /> },
 ];
@@ -116,15 +119,25 @@ export default function NavBar() {
         Navigation
       </p>
 
-      {/* Nav links */}
+      {/* Main nav links */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {links.map(l => (
+        {mainLinks.map(l => (
           <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} />
         ))}
       </div>
 
-      {/* Bottom — app identity + logout */}
+      {/* Bottom — settings, docs, theme, app switcher, logout */}
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Settings & Docs */}
+        <div style={{
+          borderTop: `1px solid ${T.border}`, paddingTop: 10,
+          display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 4,
+        }}>
+          {bottomLinks.map(l => (
+            <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} />
+          ))}
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <ThemeToggle />
         </div>

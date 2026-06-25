@@ -1,11 +1,11 @@
 import { T } from '../theme';
 
-export default function PageHeader({ icon, title, subtitle, accent, titleGradient }: {
+export default function PageHeader({ icon, title, subtitle, accent }: {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
-  accent: string;           // rgba border/bg color for the icon tile
-  titleGradient: string;    // CSS gradient for the title text
+  accent: string;
+  titleGradient?: string;
 }) {
   return (
     <div style={{ marginBottom: 32 }}>
@@ -19,7 +19,7 @@ export default function PageHeader({ icon, title, subtitle, accent, titleGradien
         </div>
         <h1 style={{
           fontSize: 34, fontWeight: 700, letterSpacing: '-0.02em', fontFamily: T.fontD,
-          background: titleGradient,
+          background: `linear-gradient(135deg, var(--color-text) 0%, ${accent} 100%)`,
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           backgroundClip: 'text', lineHeight: 1.1,
         }}>

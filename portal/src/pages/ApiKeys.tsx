@@ -148,9 +148,6 @@ export default function ApiKeys() {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  const activeCount  = keys.filter(k => !k.revoked).length;
-  const revokedCount = keys.filter(k => k.revoked).length;
-
   return (
     <div>
       {/* Page header */}
@@ -174,26 +171,6 @@ export default function ApiKeys() {
           <Plus size={16} /> New Key
         </button>
       </div>
-
-      {/* Stats row */}
-      {keys.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-          {[
-            { label: 'Active', value: activeCount,  color: T.green },
-            { label: 'Revoked', value: revokedCount, color: T.red   },
-          ].map(s => (
-            <div key={s.label} style={{
-              ...cardStyle, padding: '10px 18px',
-              display: 'flex', alignItems: 'center', gap: 10,
-            }}>
-              <span style={{ fontSize: 20, fontWeight: 700, color: s.color, fontFamily: T.fontD, lineHeight: 1 }}>
-                {s.value}
-              </span>
-              <span style={{ fontSize: 12, color: T.muted }}>{s.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Revealed secret */}
       {newSecret && (

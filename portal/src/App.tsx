@@ -37,10 +37,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       <NavBar />
       <main style={{
-        marginLeft: 240, flex: 1, overflowY: 'auto', padding: '32px 40px',
+        marginLeft: 240, flex: 1, overflowY: 'auto',
         minHeight: '100vh', background: T.bg, width: 'calc(100% - 240px)',
       }}>
-        {children}
+        <div style={{ padding: '32px 40px', maxWidth: 1400, margin: '0 auto' }}>
+          {children}
+        </div>
       </main>
     </div>
   );

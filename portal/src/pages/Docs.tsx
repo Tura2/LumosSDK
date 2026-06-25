@@ -50,7 +50,6 @@ function CodeBlock({ code }: { code: string }) {
     try {
       await navigator.clipboard.writeText(code);
     } catch {
-      // Fallback for non-HTTPS / older browsers
       const el = document.createElement('textarea');
       el.value = code;
       el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
@@ -67,7 +66,7 @@ function CodeBlock({ code }: { code: string }) {
   return (
     <div style={{ position: 'relative', marginBottom: 20 }}>
       <pre style={{
-        background: '#040810', color: '#E8F2FF',
+        background: '#070D1C', color: '#E8F2FF',
         borderRadius: 10, padding: '16px 20px', paddingRight: 90,
         fontSize: 13, fontFamily: "'JetBrains Mono', monospace",
         overflowX: 'auto', lineHeight: 1.7,
@@ -81,7 +80,7 @@ function CodeBlock({ code }: { code: string }) {
           position: 'absolute', top: 8, right: 8,
           background: copied ? 'rgba(0,232,135,0.12)' : 'rgba(255,255,255,0.05)',
           border: `1px solid ${copied ? 'rgba(0,232,135,0.4)' : '#2E3D54'}`,
-          color: copied ? '#00E887' : '#5A7090',
+          color: copied ? '#00E887' : '#8A9AB8',
           borderRadius: 6, padding: '4px 10px', fontSize: 11,
           cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace",
           transition: 'all 200ms ease', whiteSpace: 'nowrap',
@@ -97,35 +96,35 @@ function CodeBlock({ code }: { code: string }) {
 
 function Callout({ type, children }: { type: 'tip' | 'warning' | 'danger'; children: React.ReactNode }) {
   const p = {
-    tip:     { color: '#00D4FF', bg: '0,212,255',   label: 'TIP' },
-    warning: { color: '#FFB800', bg: '255,184,0',   label: 'WARNING' },
-    danger:  { color: '#FF4563', bg: '255,69,99',   label: 'DANGER' },
+    tip:     { color: 'var(--color-cyan)',  bg: 'rgba(var(--color-cyan-rgb),0.06)',  label: 'TIP' },
+    warning: { color: 'var(--color-amber)', bg: 'rgba(var(--color-amber-rgb),0.06)', label: 'WARNING' },
+    danger:  { color: 'var(--color-red)',   bg: 'rgba(var(--color-red-rgb),0.06)',   label: 'DANGER' },
   }[type];
   return (
     <div style={{
       borderLeft: `3px solid ${p.color}`,
-      background: `rgba(${p.bg},0.06)`,
+      background: p.bg,
       borderRadius: '0 8px 8px 0', padding: '12px 16px', marginBottom: 20,
     }}>
       <span style={{ fontSize: 10, fontWeight: 700, color: p.color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em' }}>
         {p.label}
       </span>
-      <div style={{ fontSize: 13, color: '#E8F2FF', lineHeight: 1.65, marginTop: 4 }}>{children}</div>
+      <div style={{ fontSize: 13, color: 'var(--color-text)', lineHeight: 1.65, marginTop: 4 }}>{children}</div>
     </div>
   );
 }
 
 function ParamTable({ rows }: { rows: { name: string; type: string; required: boolean; description: string }[] }) {
   return (
-    <div style={{ borderRadius: 10, border: '1px solid #1A2C44', overflow: 'hidden', marginBottom: 20 }}>
+    <div style={{ borderRadius: 10, border: '1px solid var(--color-border)', overflow: 'hidden', marginBottom: 20 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ background: '#0A1628' }}>
+          <tr style={{ background: 'var(--color-card2)' }}>
             {['Parameter', 'Type', 'Required', 'Description'].map(h => (
               <th key={h} style={{
                 textAlign: 'left', padding: '10px 14px',
-                borderBottom: '1px solid #1A2C44',
-                fontSize: 10, fontWeight: 700, color: '#4A6080',
+                borderBottom: '1px solid var(--color-border)',
+                fontSize: 10, fontWeight: 700, color: 'var(--color-muted)',
                 fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase',
               }}>{h}</th>
             ))}
@@ -134,27 +133,27 @@ function ParamTable({ rows }: { rows: { name: string; type: string; required: bo
         <tbody>
           {rows.map((r, i) => (
             <tr key={r.name} style={{
-              background: i % 2 === 0 ? 'transparent' : 'rgba(10,22,40,0.5)',
-              borderBottom: '1px solid rgba(26,44,68,0.5)',
+              background: i % 2 === 0 ? 'transparent' : 'var(--color-card2)',
+              borderBottom: '1px solid var(--color-border)',
             }}>
               <td style={{ padding: '10px 14px' }}>
-                <code style={{ color: '#00D4FF', fontFamily: "'JetBrains Mono', monospace" }}>{r.name}</code>
+                <code style={{ color: 'var(--color-cyan)', fontFamily: "'JetBrains Mono', monospace" }}>{r.name}</code>
               </td>
               <td style={{ padding: '10px 14px' }}>
-                <code style={{ color: '#7B5FFF', fontFamily: "'JetBrains Mono', monospace" }}>{r.type}</code>
+                <code style={{ color: 'var(--color-purple)', fontFamily: "'JetBrains Mono', monospace" }}>{r.type}</code>
               </td>
               <td style={{ padding: '10px 14px' }}>
                 <span style={{
                   display: 'inline-block', fontSize: 10, fontWeight: 700,
                   padding: '2px 8px', borderRadius: 20,
-                  background: r.required ? 'rgba(0,232,135,0.1)' : 'rgba(74,96,128,0.12)',
-                  color: r.required ? '#00E887' : '#4A6080',
-                  border: `1px solid ${r.required ? 'rgba(0,232,135,0.3)' : 'rgba(74,96,128,0.3)'}`,
+                  background: r.required ? 'rgba(var(--color-green-rgb),0.1)' : 'rgba(var(--color-border-rgb),0.15)',
+                  color: r.required ? 'var(--color-green)' : 'var(--color-muted)',
+                  border: `1px solid ${r.required ? 'rgba(var(--color-green-rgb),0.3)' : 'var(--color-border)'}`,
                 }}>
                   {r.required ? 'Required' : 'Optional'}
                 </span>
               </td>
-              <td style={{ padding: '10px 14px', color: '#B8C8DE', lineHeight: 1.55 }}>{r.description}</td>
+              <td style={{ padding: '10px 14px', color: 'var(--color-text)', lineHeight: 1.55, opacity: 0.8 }}>{r.description}</td>
             </tr>
           ))}
         </tbody>
@@ -164,12 +163,17 @@ function ParamTable({ rows }: { rows: { name: string; type: string; required: bo
 }
 
 function EndpointBadge({ method }: { method: string }) {
-  const colors: Record<string, string> = { GET: '#00D4FF', POST: '#00E887', PATCH: '#FFB800', DELETE: '#FF4563' };
-  const c = colors[method] ?? '#6A7D9A';
+  const themes: Record<string, { color: string; bg: string; border: string }> = {
+    GET:    { color: 'var(--color-cyan)',   bg: 'rgba(var(--color-cyan-rgb),0.1)',   border: 'rgba(var(--color-cyan-rgb),0.3)'   },
+    POST:   { color: 'var(--color-green)',  bg: 'rgba(var(--color-green-rgb),0.1)',  border: 'rgba(var(--color-green-rgb),0.3)'  },
+    PATCH:  { color: 'var(--color-amber)',  bg: 'rgba(var(--color-amber-rgb),0.1)',  border: 'rgba(var(--color-amber-rgb),0.3)'  },
+    DELETE: { color: 'var(--color-red)',    bg: 'rgba(var(--color-red-rgb),0.1)',    border: 'rgba(var(--color-red-rgb),0.3)'    },
+  };
+  const t = themes[method] ?? { color: 'var(--color-muted)', bg: 'transparent', border: 'var(--color-border)' };
   return (
     <span style={{
-      background: `${c}18`, border: `1px solid ${c}50`,
-      color: c, borderRadius: 6, padding: '2px 8px',
+      background: t.bg, border: `1px solid ${t.border}`,
+      color: t.color, borderRadius: 6, padding: '2px 8px',
       fontSize: 11, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
       flexShrink: 0,
     }}>{method}</span>
@@ -180,15 +184,15 @@ function EndpointRow({ method, path, description }: { method: string; path: stri
   return (
     <div style={{
       padding: '10px 14px',
-      background: '#0A1628', borderRadius: 9,
-      border: '1px solid #1A2C44', marginBottom: 7,
+      background: 'var(--color-card)', borderRadius: 9,
+      border: '1px solid var(--color-border)', marginBottom: 7,
       display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
     }}>
       <EndpointBadge method={method} />
-      <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#E8F2FF', fontSize: 12, flex: 1, minWidth: 200 }}>
+      <code style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-text)', fontSize: 12, flex: 1, minWidth: 200 }}>
         {path}
       </code>
-      <span style={{ fontSize: 12, color: '#4A6080' }}>{description}</span>
+      <span style={{ fontSize: 12, color: 'var(--color-muted)' }}>{description}</span>
     </div>
   );
 }
@@ -196,12 +200,12 @@ function EndpointRow({ method, path, description }: { method: string; path: stri
 function SectionH2({ id, children }: { id: string; children: React.ReactNode }) {
   return (
     <h2 id={id} style={{
-      fontSize: 24, fontWeight: 700, color: '#E8F2FF',
+      fontSize: 24, fontWeight: 700, color: 'var(--color-text)',
       marginBottom: 16, marginTop: 0,
       letterSpacing: '-0.02em',
       fontFamily: "'Clash Display', sans-serif",
       paddingTop: 40,
-      borderTop: '1px solid #1A2C44',
+      borderTop: '1px solid var(--color-border)',
     }}>
       {children}
     </h2>
@@ -210,19 +214,19 @@ function SectionH2({ id, children }: { id: string; children: React.ReactNode }) 
 
 function H3({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <h3 id={id} style={{ fontSize: 15, fontWeight: 600, color: '#E8F2FF', marginBottom: 10, marginTop: 28, scrollMarginTop: 24 }}>
+    <h3 id={id} style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)', marginBottom: 10, marginTop: 28, scrollMarginTop: 24 }}>
       {children}
     </h3>
   );
 }
 
 function P({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: 14, color: '#9AB0C8', lineHeight: 1.75, marginBottom: 16 }}>{children}</p>;
+  return <p style={{ fontSize: 14, color: 'var(--color-muted)', lineHeight: 1.75, marginBottom: 16 }}>{children}</p>;
 }
 
 function Mono({ children }: { children: React.ReactNode }) {
   return (
-    <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF', fontSize: '0.88em', background: 'rgba(0,212,255,0.08)', padding: '1px 5px', borderRadius: 4 }}>
+    <code style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--color-cyan)', fontSize: '0.88em', background: 'rgba(var(--color-cyan-rgb),0.08)', padding: '1px 5px', borderRadius: 4 }}>
       {children}
     </code>
   );
@@ -242,15 +246,15 @@ function Pipeline() {
     <div style={{
       display: 'flex', alignItems: 'stretch',
       borderRadius: 14, overflow: 'hidden',
-      border: '1px solid #1A2C44',
-      background: '#040810',
+      border: '1px solid var(--color-border)',
+      background: 'var(--color-card)',
     }}>
       {steps.map((step, i) => (
         <div key={step.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
           <div style={{
             flex: 1, padding: '20px 8px', textAlign: 'center',
             background: `${step.color}09`,
-            borderRight: i < steps.length - 1 ? '1px solid #1A2C44' : 'none',
+            borderRight: i < steps.length - 1 ? '1px solid var(--color-border)' : 'none',
           }}>
             <div style={{
               width: 6, height: 6, borderRadius: '50%',
@@ -264,7 +268,7 @@ function Pipeline() {
             }}>
               {step.label}
             </div>
-            <div style={{ fontSize: 10, color: '#3A5070' }}>
+            <div style={{ fontSize: 10, color: 'var(--color-muted)' }}>
               {step.sub}
             </div>
           </div>
@@ -275,8 +279,8 @@ function Pipeline() {
               position: 'relative',
             }}>
               <svg width="16" height="10" viewBox="0 0 16 10" fill="none"
-                style={{ position: 'absolute', left: -8, zIndex: 1, background: '#040810', padding: '0 2px' }}>
-                <path d="M0 5 H10 M6 1 L12 5 L6 9" stroke="#2E4060" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                style={{ position: 'absolute', left: -8, zIndex: 1, background: 'var(--color-card)', padding: '0 2px' }}>
+                <path d="M0 5 H10 M6 1 L12 5 L6 9" stroke="var(--color-border)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           )}
@@ -338,22 +342,22 @@ export default function Docs() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#040810', color: '#E8F2FF' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)', color: 'var(--color-text)' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <nav style={{
         position: 'fixed', top: 0, left: 0, width: 248, height: '100vh',
-        background: '#070D1C', borderRight: '1px solid #1A2C44',
+        background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)',
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto', zIndex: 10,
       }}>
         {/* Logo */}
-        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid #1A2C44', flexShrink: 0 }}>
+        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <img src="/lumos-icon.png" width={30} height={30} alt="Lumos" style={{ borderRadius: 7 }} />
             <span style={{
               fontSize: 17, fontWeight: 700, fontFamily: "'Clash Display', sans-serif",
-              background: 'linear-gradient(135deg, #00D4FF, #7B5FFF)',
+              background: 'linear-gradient(135deg, var(--color-cyan), var(--color-purple))',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>
               LumosSDK
@@ -363,7 +367,7 @@ export default function Docs() {
 
         {/* Nav items */}
         <div style={{ padding: '14px 12px', flex: 1 }}>
-          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#283848', padding: '0 8px', marginBottom: 10 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-muted)', padding: '0 8px', marginBottom: 10, opacity: 0.6 }}>
             Documentation
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -384,9 +388,9 @@ export default function Docs() {
                         paddingLeft: isActive ? 8 : 10,
                         borderRadius: 7,
                         fontSize: 13, fontWeight: parentHit ? 600 : 400,
-                        color: parentHit ? '#00D4FF' : '#4A6080',
-                        background: isActive ? 'rgba(0,212,255,0.07)' : 'transparent',
-                        borderLeft: `2px solid ${isActive ? '#00D4FF' : 'transparent'}`,
+                        color: parentHit ? 'var(--color-cyan)' : 'var(--color-muted)',
+                        background: isActive ? 'rgba(var(--color-cyan-rgb),0.07)' : 'transparent',
+                        borderLeft: `2px solid ${isActive ? 'var(--color-cyan)' : 'transparent'}`,
                         textDecoration: 'none', transition: 'all 180ms ease',
                       }}
                     >
@@ -397,11 +401,11 @@ export default function Docs() {
                         onClick={() => toggleSection(item.id)}
                         style={{
                           background: 'none', border: 'none', cursor: 'pointer',
-                          color: parentHit ? '#00D4FF' : '#283848',
+                          color: parentHit ? 'var(--color-cyan)' : 'var(--color-muted)',
                           padding: '4px 6px', fontSize: 9, lineHeight: 1,
                           transition: 'transform 200ms ease',
                           transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-                          flexShrink: 0,
+                          flexShrink: 0, opacity: 0.7,
                         }}
                       >
                         ▾
@@ -413,7 +417,7 @@ export default function Docs() {
                   {item.children && isOpen && (
                     <div style={{
                       marginLeft: 18, marginBottom: 4,
-                      borderLeft: '1px solid #1A2C44', paddingLeft: 12,
+                      borderLeft: '1px solid var(--color-border)', paddingLeft: 12,
                     }}>
                       {item.children.map(child => {
                         const childActive = activeSection === child.id;
@@ -425,8 +429,8 @@ export default function Docs() {
                             style={{
                               display: 'block', padding: '5px 8px', borderRadius: 6,
                               fontSize: 12, fontWeight: childActive ? 600 : 400,
-                              color: childActive ? '#00D4FF' : '#3A5468',
-                              background: childActive ? 'rgba(0,212,255,0.06)' : 'transparent',
+                              color: childActive ? 'var(--color-cyan)' : 'var(--color-muted)',
+                              background: childActive ? 'rgba(var(--color-cyan-rgb),0.06)' : 'transparent',
                               textDecoration: 'none', transition: 'all 150ms ease',
                             }}
                           >
@@ -443,18 +447,18 @@ export default function Docs() {
         </div>
 
         {/* Nav footer */}
-        <div style={{ borderTop: '1px solid #1A2C44', flexShrink: 0 }}>
+        <div style={{ borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
           <a
             href="/"
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '12px 20px',
-              fontSize: 13, color: '#3A5470',
+              fontSize: 13, color: 'var(--color-muted)',
               textDecoration: 'none', transition: 'color 180ms ease',
-              borderBottom: '1px solid #1A2C44',
+              borderBottom: '1px solid var(--color-border)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#00D4FF')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#3A5470')}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-cyan)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-muted)')}
           >
             <ArrowLeft size={14} />
             Back to Portal
@@ -462,8 +466,8 @@ export default function Docs() {
           <div style={{ padding: '10px 20px' }}>
             <span style={{
               display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 8px',
-              borderRadius: 20, background: 'rgba(0,212,255,0.08)',
-              color: '#2A5070', border: '1px solid rgba(0,212,255,0.15)',
+              borderRadius: 20, background: 'rgba(var(--color-cyan-rgb),0.08)',
+              color: 'var(--color-muted)', border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
             }}>v0.1.0</span>
           </div>
         </div>
@@ -478,22 +482,22 @@ export default function Docs() {
             <div style={{ textAlign: 'center', paddingBottom: 44 }}>
               <div style={{
                 display: 'inline-block',
-                background: 'rgba(0,212,255,0.07)', border: '1px solid rgba(0,212,255,0.2)',
-                borderRadius: 20, padding: '4px 14px', fontSize: 11, color: '#00D4FF',
+                background: 'rgba(var(--color-cyan-rgb),0.07)', border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
+                borderRadius: 20, padding: '4px 14px', fontSize: 11, color: 'var(--color-cyan)',
                 fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
                 fontFamily: "'JetBrains Mono', monospace", marginBottom: 22,
               }}>
                 Android Observability SDK
               </div>
               <h1 style={{
-                fontSize: 48, fontWeight: 800, color: '#E8F2FF',
+                fontSize: 48, fontWeight: 800, color: 'var(--color-text)',
                 margin: '0 0 22px', letterSpacing: '-0.03em', lineHeight: 1.1,
                 fontFamily: "'Clash Display', sans-serif",
               }}>
                 Overview
               </h1>
               <p style={{
-                fontSize: 17, color: '#7A9AB8', lineHeight: 1.8,
+                fontSize: 17, color: 'var(--color-muted)', lineHeight: 1.8,
                 maxWidth: 580, margin: '0 auto',
               }}>
                 LumosSDK is an Android observability SDK for AI-powered apps. It automatically traces every
@@ -666,15 +670,15 @@ curl https://your-lumos-server.com/api/apps/APP_ID/sessions \\
           {/* ── ERROR CODES ───────────────────────────────────────────── */}
           <section id="error-codes" style={{ marginBottom: 64 }}>
             <SectionH2 id="error-codes">Error Codes</SectionH2>
-            <div style={{ borderRadius: 10, border: '1px solid #1A2C44', overflow: 'hidden' }}>
+            <div style={{ borderRadius: 10, border: '1px solid var(--color-border)', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#0A1628' }}>
+                  <tr style={{ background: 'var(--color-card2)' }}>
                     {['Status', 'Meaning', 'Common Cause', 'Fix'].map(h => (
                       <th key={h} style={{
                         textAlign: 'left', padding: '10px 14px',
-                        borderBottom: '1px solid #1A2C44',
-                        fontSize: 10, fontWeight: 700, color: '#4A6080',
+                        borderBottom: '1px solid var(--color-border)',
+                        fontSize: 10, fontWeight: 700, color: 'var(--color-muted)',
                         fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase',
                       }}>{h}</th>
                     ))}
@@ -690,15 +694,15 @@ curl https://your-lumos-server.com/api/apps/APP_ID/sessions \\
                     { status: '500', meaning: 'Server Error',  cause: 'Unexpected failure',                        fix: 'Check server logs. Ensure JWT_SECRET and OPENROUTER_API_KEY env vars are set.' },
                   ].map((r, i) => (
                     <tr key={r.status} style={{
-                      background: i % 2 === 0 ? 'transparent' : 'rgba(10,22,40,0.5)',
-                      borderBottom: '1px solid rgba(26,44,68,0.5)',
+                      background: i % 2 === 0 ? 'transparent' : 'var(--color-card2)',
+                      borderBottom: '1px solid var(--color-border)',
                     }}>
                       <td style={{ padding: '10px 14px' }}>
-                        <code style={{ color: '#FF4563', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{r.status}</code>
+                        <code style={{ color: 'var(--color-red)', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{r.status}</code>
                       </td>
-                      <td style={{ padding: '10px 14px', color: '#E8F2FF', fontWeight: 600 }}>{r.meaning}</td>
-                      <td style={{ padding: '10px 14px', color: '#4A6080' }}>{r.cause}</td>
-                      <td style={{ padding: '10px 14px', color: '#9AB0C8', lineHeight: 1.55 }}>{r.fix}</td>
+                      <td style={{ padding: '10px 14px', color: 'var(--color-text)', fontWeight: 600 }}>{r.meaning}</td>
+                      <td style={{ padding: '10px 14px', color: 'var(--color-muted)' }}>{r.cause}</td>
+                      <td style={{ padding: '10px 14px', color: 'var(--color-text)', lineHeight: 1.55, opacity: 0.8 }}>{r.fix}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -782,27 +786,27 @@ fun tracesAreSentToServer() = runTest {
               ],
             }].map(release => (
               <div key={release.version} style={{
-                background: '#0A1628', border: '1px solid #1A2C44',
+                background: 'var(--color-card)', border: '1px solid var(--color-border)',
                 borderRadius: 12, padding: '20px 24px', marginBottom: 16,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#00D4FF', fontFamily: "'Clash Display', sans-serif" }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-cyan)', fontFamily: "'Clash Display', sans-serif" }}>
                     {release.version}
                   </span>
-                  <span style={{ fontSize: 11, color: '#2A4060', fontFamily: "'JetBrains Mono', monospace" }}>
+                  <span style={{ fontSize: 11, color: 'var(--color-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
                     {release.date}
                   </span>
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 20,
-                    background: 'rgba(0,232,135,0.1)', color: '#00E887',
-                    border: '1px solid rgba(0,232,135,0.25)',
+                    background: 'rgba(var(--color-green-rgb),0.1)', color: 'var(--color-green)',
+                    border: '1px solid rgba(var(--color-green-rgb),0.25)',
                   }}>
                     {release.tag}
                   </span>
                 </div>
                 <ul style={{ paddingLeft: 20, margin: 0 }}>
                   {release.changes.map(c => (
-                    <li key={c} style={{ fontSize: 13, color: '#7A9AB8', lineHeight: 1.9 }}>{c}</li>
+                    <li key={c} style={{ fontSize: 13, color: 'var(--color-muted)', lineHeight: 1.9 }}>{c}</li>
                   ))}
                 </ul>
               </div>
