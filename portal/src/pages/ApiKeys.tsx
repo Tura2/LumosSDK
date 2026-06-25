@@ -254,10 +254,17 @@ export default function ApiKeys() {
         </div>
       )}
 
-      {/* Key rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Key cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+        gap: 16,
+      }}>
         {keys.map(k => {
-          const accentColor = k.revoked ? 'rgba(255,69,99,0.55)' : 'rgba(0,232,135,0.55)';
+          const isRevoked = k.revoked;
+          const accentColor = isRevoked ? T.red : T.green;
+          const accentAlpha = isRevoked ? 'rgba(255,69,99,0.12)' : 'rgba(0,232,135,0.12)';
+          const accentBorder = isRevoked ? 'rgba(255,69,99,0.3)' : 'rgba(0,232,135,0.3)';
           const maskedKey = k.keySuffix
             ? `lms_${'•'.repeat(16)}${k.keySuffix}`
             : `lms_${'•'.repeat(18)}`;
@@ -265,102 +272,126 @@ export default function ApiKeys() {
           return (
             <div key={k.id} style={{
               ...cardStyle,
-              padding: '14px 20px',
-              display: 'flex', alignItems: 'center', gap: 16,
-              borderLeft: `3px solid ${accentColor}`,
+              padding: 24,
+              display: 'flex', flexDirection: 'column', gap: 18,
+              opacity: isRevoked ? 0.75 : 1,
               transition,
-              opacity: k.revoked ? 0.75 : 1,
             }}>
-              {/* Key icon */}
-              <div style={{
-                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: k.revoked ? 'rgba(255,69,99,0.08)' : 'rgba(0,232,135,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Key size={15} color={k.revoked ? T.red : T.green} strokeWidth={1.5} />
-              </div>
-
-              {/* Name + meta */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontD, marginBottom: 5 }}>
-                  {k.name}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <code style={{
-                    fontSize: 11, color: T.text, fontFamily: T.fontM,
-                    background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)',
-                    borderRadius: 5, padding: '2px 9px', letterSpacing: '0.04em',
+              {/* Card header: icon + name + status */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: accentAlpha,
+                  border: `1px solid ${accentBorder}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Key size={18} color={accentColor} strokeWidth={1.5} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    fontSize: 16, fontWeight: 700, color: T.text,
+                    fontFamily: T.fontD, lineHeight: 1.2, marginBottom: 4,
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>
-                    {maskedKey}
-                  </code>
-                  <span style={{ color: T.muted, fontSize: 11 }}>·</span>
-                  <span style={{ fontSize: 11, color: T.muted }}>
-                    Created {relativeTime(k.createdAt)}
-                  </span>
-                  <span style={{ color: T.muted, fontSize: 11 }}>·</span>
-                  <span style={{ fontSize: 11, color: k.lastUsedAt ? T.muted : 'rgba(106,125,154,0.5)' }}>
-                    {k.lastUsedAt ? `Used ${relativeTime(k.lastUsedAt)}` : 'Never used'}
+                    {k.name}
+                  </p>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    background: accentAlpha,
+                    border: `1px solid ${accentBorder}`,
+                    borderRadius: 100, padding: '3px 10px',
+                    color: accentColor,
+                    fontSize: 11, fontWeight: 700, fontFamily: T.fontM,
+                  }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: accentColor }} />
+                    {isRevoked ? 'Revoked' : 'Active'}
                   </span>
                 </div>
               </div>
 
-              {/* Status badge */}
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                background: k.revoked ? 'rgba(255,69,99,0.1)' : 'rgba(0,232,135,0.1)',
-                border: `1px solid ${k.revoked ? 'rgba(255,69,99,0.25)' : 'rgba(0,232,135,0.25)'}`,
-                borderRadius: 100, padding: '4px 12px',
-                color: k.revoked ? T.red : T.green,
-                fontSize: 11, fontWeight: 700, fontFamily: T.fontM,
-                flexShrink: 0,
+              {/* Masked key */}
+              <div style={{
+                background: 'rgba(0,0,0,0.15)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 10, padding: '12px 16px',
               }}>
-                <span style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: k.revoked ? T.red : T.green,
-                  flexShrink: 0,
-                }} />
-                {k.revoked ? 'Revoked' : 'Active'}
-              </span>
+                <p style={{
+                  fontSize: 10, fontWeight: 600, letterSpacing: '0.1em',
+                  textTransform: 'uppercase', color: T.muted,
+                  fontFamily: T.fontM, marginBottom: 6,
+                }}>
+                  API Key
+                </p>
+                <code style={{
+                  fontSize: 13, color: T.text, fontFamily: T.fontM,
+                  letterSpacing: '0.05em', display: 'block',
+                }}>
+                  {maskedKey}
+                </code>
+              </div>
 
-              {/* Actions */}
-              {!k.revoked && (
-                <button
-                  onClick={() => setConfirmRevokeId(k.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    background: 'none', border: `1px solid var(--color-border)`,
-                    color: T.muted, padding: '6px 14px', borderRadius: 8,
-                    cursor: 'pointer', fontSize: 12, fontWeight: 500,
-                    minHeight: 34, transition, flexShrink: 0,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = T.red;
-                    e.currentTarget.style.color = T.red;
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                    e.currentTarget.style.color = T.muted;
-                  }}
-                >
-                  <ShieldOff size={13} /> Revoke
-                </button>
-              )}
-              {k.revoked && (
-                <button
-                  onClick={() => setConfirmDeleteId(k.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    background: 'none', border: `1px solid rgba(255,69,99,0.3)`,
-                    color: T.red, padding: '6px 14px', borderRadius: 8,
-                    cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                    minHeight: 34, transition, flexShrink: 0,
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.08)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                >
-                  <Trash2 size={13} /> Delete
-                </button>
-              )}
+              {/* Meta row: created + last used */}
+              <div style={{ display: 'flex', gap: 24 }}>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.muted, fontFamily: T.fontM, marginBottom: 4 }}>
+                    Created
+                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: T.text }}>
+                    {relativeTime(k.createdAt)}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.muted, fontFamily: T.fontM, marginBottom: 4 }}>
+                    Last Used
+                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: k.lastUsedAt ? T.text : T.muted }}>
+                    {k.lastUsedAt ? relativeTime(k.lastUsedAt) : 'Never'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 16 }}>
+                {!isRevoked ? (
+                  <button
+                    onClick={() => setConfirmRevokeId(k.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'none', border: `1px solid var(--color-border)`,
+                      color: T.muted, padding: '8px 16px', borderRadius: 8,
+                      cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                      minHeight: 38, transition, width: '100%', justifyContent: 'center',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = T.red;
+                      e.currentTarget.style.color = T.red;
+                      e.currentTarget.style.background = 'rgba(255,69,99,0.06)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                      e.currentTarget.style.color = T.muted;
+                      e.currentTarget.style.background = 'none';
+                    }}
+                  >
+                    <ShieldOff size={14} /> Revoke key
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDeleteId(k.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'rgba(255,69,99,0.06)', border: `1px solid rgba(255,69,99,0.3)`,
+                      color: T.red, padding: '8px 16px', borderRadius: 8,
+                      cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                      minHeight: 38, transition, width: '100%', justifyContent: 'center',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.12)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,69,99,0.06)')}
+                  >
+                    <Trash2 size={14} /> Delete key
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
