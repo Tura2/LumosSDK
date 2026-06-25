@@ -1,32 +1,76 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const SECTIONS = [
-  { id: 'overview',         label: 'Overview' },
-  { id: 'installation',     label: 'Installation' },
-  { id: 'get-started',      label: 'Get Started' },
-  { id: 'configuration',    label: 'Configuration' },
-  { id: 'api-reference',    label: 'API Reference' },
-  { id: 'server-endpoints', label: 'Server Endpoints' },
-  { id: 'error-codes',      label: 'Error Codes' },
-  { id: 'examples',         label: 'Examples' },
-  { id: 'changelog',        label: 'Changelog' },
+// ─── Nav structure ────────────────────────────────────────────────────────────
+
+type NavChild = { id: string; label: string };
+type NavItem  = { id: string; label: string; children?: NavChild[] };
+
+const NAV: NavItem[] = [
+  { id: 'overview',     label: 'Overview' },
+  { id: 'installation', label: 'Installation' },
+  { id: 'get-started',  label: 'Get Started' },
+  { id: 'configuration',label: 'Configuration' },
+  {
+    id: 'api-reference', label: 'API Reference',
+    children: [
+      { id: 'api-init',        label: 'init()' },
+      { id: 'api-start-trace', label: 'startTrace()' },
+      { id: 'api-trace-props', label: 'Trace Properties' },
+      { id: 'api-add-span',    label: 'addSpan()' },
+      { id: 'api-end-trace',   label: 'endTrace()' },
+      { id: 'api-feedback',    label: 'feedback()' },
+      { id: 'api-flush',       label: 'flush()' },
+      { id: 'api-listener',    label: 'setListener()' },
+    ],
+  },
+  {
+    id: 'server-endpoints', label: 'Server Endpoints',
+    children: [
+      { id: 'sdk-endpoints',    label: 'SDK Endpoints' },
+      { id: 'portal-endpoints', label: 'Portal Endpoints' },
+      { id: 'curl-examples',    label: 'cURL Examples' },
+    ],
+  },
+  { id: 'error-codes', label: 'Error Codes' },
+  { id: 'examples',    label: 'Examples' },
+  { id: 'changelog',   label: 'Changelog' },
 ];
 
-function CodeBlock({ code }: { code: string; language?: string }) {
+const ALL_IDS = NAV.flatMap(item =>
+  item.children ? [item.id, ...item.children.map(c => c.id)] : [item.id]
+);
+
+// ─── Shared primitives ────────────────────────────────────────────────────────
+
+function CodeBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
-  function copy() {
-    navigator.clipboard.writeText(code);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      // Fallback for non-HTTPS / older browsers
+      const el = document.createElement('textarea');
+      el.value = code;
+      el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      try { document.execCommand('copy'); } catch { /* silent */ }
+      document.body.removeChild(el);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
   return (
     <div style={{ position: 'relative', marginBottom: 20 }}>
       <pre style={{
         background: '#040810', color: '#E8F2FF',
-        borderRadius: 10, padding: '16px 20px',
+        borderRadius: 10, padding: '16px 20px', paddingRight: 90,
         fontSize: 13, fontFamily: "'JetBrains Mono', monospace",
         overflowX: 'auto', lineHeight: 1.7,
-        border: '1px solid #2E3D54',
+        border: '1px solid #1A2C44', margin: 0,
       }}>
         <code>{code}</code>
       </pre>
@@ -34,196 +78,433 @@ function CodeBlock({ code }: { code: string; language?: string }) {
         onClick={copy}
         style={{
           position: 'absolute', top: 8, right: 8,
-          background: 'rgba(255,255,255,0.07)', border: '1px solid #2E3D54',
-          color: copied ? '#00E887' : '#6A7D9A', borderRadius: 6,
-          padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace",
+          background: copied ? 'rgba(0,232,135,0.12)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${copied ? 'rgba(0,232,135,0.4)' : '#2E3D54'}`,
+          color: copied ? '#00E887' : '#5A7090',
+          borderRadius: 6, padding: '4px 10px', fontSize: 11,
+          cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace",
+          transition: 'all 200ms ease', whiteSpace: 'nowrap',
         }}
       >
-        {copied ? 'Copied!' : 'Copy'}
+        {copied ? '✓ Copied' : 'Copy'}
       </button>
     </div>
   );
 }
 
 function Callout({ type, children }: { type: 'tip' | 'warning' | 'danger'; children: React.ReactNode }) {
-  const colors = { tip: '#00D4FF', warning: '#FFB800', danger: '#FF4563' };
-  const labels = { tip: 'TIP', warning: 'WARNING', danger: 'DANGER' };
-  const color = colors[type];
+  const p = {
+    tip:     { color: '#00D4FF', bg: '0,212,255',   label: 'TIP' },
+    warning: { color: '#FFB800', bg: '255,184,0',   label: 'WARNING' },
+    danger:  { color: '#FF4563', bg: '255,69,99',   label: 'DANGER' },
+  }[type];
   return (
     <div style={{
-      borderLeft: `3px solid ${color}`,
-      background: `rgba(${type === 'tip' ? '0,212,255' : type === 'warning' ? '255,184,0' : '255,69,99'},0.06)`,
+      borderLeft: `3px solid ${p.color}`,
+      background: `rgba(${p.bg},0.06)`,
       borderRadius: '0 8px 8px 0', padding: '12px 16px', marginBottom: 20,
     }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em' }}>
-        {labels[type]}
+      <span style={{ fontSize: 10, fontWeight: 700, color: p.color, fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em' }}>
+        {p.label}
       </span>
-      <div style={{ fontSize: 13, color: '#E8F2FF', lineHeight: 1.6, marginTop: 4 }}>{children}</div>
+      <div style={{ fontSize: 13, color: '#E8F2FF', lineHeight: 1.65, marginTop: 4 }}>{children}</div>
     </div>
   );
 }
 
 function ParamTable({ rows }: { rows: { name: string; type: string; required: boolean; description: string }[] }) {
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20, fontSize: 13 }}>
-      <thead>
-        <tr>
-          {['Parameter', 'Type', 'Required', 'Description'].map(h => (
-            <th key={h} style={{
-              textAlign: 'left', padding: '8px 12px',
-              borderBottom: '1px solid #2E3D54',
-              fontSize: 10, fontWeight: 700, color: '#6A7D9A',
-              fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase',
-            }}>{h}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(r => (
-          <tr key={r.name} style={{ borderBottom: '1px solid rgba(46,61,84,0.4)' }}>
-            <td style={{ padding: '10px 12px' }}><code style={{ color: '#00D4FF', fontFamily: "'JetBrains Mono', monospace" }}>{r.name}</code></td>
-            <td style={{ padding: '10px 12px' }}><code style={{ color: '#7B5FFF', fontFamily: "'JetBrains Mono', monospace" }}>{r.type}</code></td>
-            <td style={{ padding: '10px 12px', color: r.required ? '#00E887' : '#6A7D9A' }}>{r.required ? 'Yes' : 'No'}</td>
-            <td style={{ padding: '10px 12px', color: '#E8F2FF', lineHeight: 1.5 }}>{r.description}</td>
+    <div style={{ borderRadius: 10, border: '1px solid #1A2C44', overflow: 'hidden', marginBottom: 20 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <thead>
+          <tr style={{ background: '#0A1628' }}>
+            {['Parameter', 'Type', 'Required', 'Description'].map(h => (
+              <th key={h} style={{
+                textAlign: 'left', padding: '10px 14px',
+                borderBottom: '1px solid #1A2C44',
+                fontSize: 10, fontWeight: 700, color: '#4A6080',
+                fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>{h}</th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.name} style={{
+              background: i % 2 === 0 ? 'transparent' : 'rgba(10,22,40,0.5)',
+              borderBottom: '1px solid rgba(26,44,68,0.5)',
+            }}>
+              <td style={{ padding: '10px 14px' }}>
+                <code style={{ color: '#00D4FF', fontFamily: "'JetBrains Mono', monospace" }}>{r.name}</code>
+              </td>
+              <td style={{ padding: '10px 14px' }}>
+                <code style={{ color: '#7B5FFF', fontFamily: "'JetBrains Mono', monospace" }}>{r.type}</code>
+              </td>
+              <td style={{ padding: '10px 14px' }}>
+                <span style={{
+                  display: 'inline-block', fontSize: 10, fontWeight: 700,
+                  padding: '2px 8px', borderRadius: 20,
+                  background: r.required ? 'rgba(0,232,135,0.1)' : 'rgba(74,96,128,0.12)',
+                  color: r.required ? '#00E887' : '#4A6080',
+                  border: `1px solid ${r.required ? 'rgba(0,232,135,0.3)' : 'rgba(74,96,128,0.3)'}`,
+                }}>
+                  {r.required ? 'Required' : 'Optional'}
+                </span>
+              </td>
+              <td style={{ padding: '10px 14px', color: '#B8C8DE', lineHeight: 1.55 }}>{r.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
 function EndpointBadge({ method }: { method: string }) {
   const colors: Record<string, string> = { GET: '#00D4FF', POST: '#00E887', PATCH: '#FFB800', DELETE: '#FF4563' };
+  const c = colors[method] ?? '#6A7D9A';
   return (
     <span style={{
-      background: `${colors[method] ?? '#6A7D9A'}20`,
-      border: `1px solid ${colors[method] ?? '#6A7D9A'}50`,
-      color: colors[method] ?? '#6A7D9A',
-      borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700,
-      fontFamily: "'JetBrains Mono', monospace", marginRight: 10,
+      background: `${c}18`, border: `1px solid ${c}50`,
+      color: c, borderRadius: 6, padding: '2px 8px',
+      fontSize: 11, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+      flexShrink: 0,
     }}>{method}</span>
   );
 }
 
-function H2({ id, children }: { id: string; children: React.ReactNode }) {
+function EndpointRow({ method, path, description }: { method: string; path: string; description: string }) {
   return (
-    <h2 id={id} style={{ fontSize: 22, fontWeight: 700, color: '#E8F2FF', marginBottom: 16, marginTop: 0, letterSpacing: '-0.02em', fontFamily: "'Clash Display', sans-serif" }}>
+    <div style={{
+      padding: '10px 14px',
+      background: '#0A1628', borderRadius: 9,
+      border: '1px solid #1A2C44', marginBottom: 7,
+      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+    }}>
+      <EndpointBadge method={method} />
+      <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#E8F2FF', fontSize: 12, flex: 1, minWidth: 200 }}>
+        {path}
+      </code>
+      <span style={{ fontSize: 12, color: '#4A6080' }}>{description}</span>
+    </div>
+  );
+}
+
+function SectionH2({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <h2 id={id} style={{
+      fontSize: 24, fontWeight: 700, color: '#E8F2FF',
+      marginBottom: 16, marginTop: 0,
+      letterSpacing: '-0.02em',
+      fontFamily: "'Clash Display', sans-serif",
+      paddingTop: 40,
+      borderTop: '1px solid #1A2C44',
+    }}>
       {children}
     </h2>
   );
 }
 
-function H3({ children }: { children: React.ReactNode }) {
+function H3({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <h3 style={{ fontSize: 15, fontWeight: 600, color: '#E8F2FF', marginBottom: 10, marginTop: 24 }}>
+    <h3 id={id} style={{ fontSize: 15, fontWeight: 600, color: '#E8F2FF', marginBottom: 10, marginTop: 28, scrollMarginTop: 24 }}>
       {children}
     </h3>
   );
 }
 
 function P({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: 14, color: '#B8C8DE', lineHeight: 1.7, marginBottom: 16 }}>{children}</p>;
+  return <p style={{ fontSize: 14, color: '#9AB0C8', lineHeight: 1.75, marginBottom: 16 }}>{children}</p>;
 }
+
+function Mono({ children }: { children: React.ReactNode }) {
+  return (
+    <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF', fontSize: '0.88em', background: 'rgba(0,212,255,0.08)', padding: '1px 5px', borderRadius: 4 }}>
+      {children}
+    </code>
+  );
+}
+
+// ─── Pipeline diagram ─────────────────────────────────────────────────────────
+
+function Pipeline() {
+  const steps = [
+    { label: 'Your App',      sub: 'Kotlin / Compose', color: '#7B5FFF' },
+    { label: 'Room Queue',    sub: 'SQLite buffer',     color: '#00D4FF' },
+    { label: 'WorkManager',   sub: 'Background jobs',  color: '#00E887' },
+    { label: 'Lumos Server',  sub: 'Ktor + SQLite',    color: '#FFB800' },
+    { label: 'Portal',        sub: 'React dashboard',  color: '#FF6B6B' },
+  ];
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'stretch',
+      borderRadius: 14, overflow: 'hidden',
+      border: '1px solid #1A2C44',
+      background: '#040810',
+    }}>
+      {steps.map((step, i) => (
+        <div key={step.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <div style={{
+            flex: 1, padding: '20px 8px', textAlign: 'center',
+            background: `${step.color}09`,
+            borderRight: i < steps.length - 1 ? '1px solid #1A2C44' : 'none',
+          }}>
+            <div style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: step.color,
+              margin: '0 auto 8px',
+              boxShadow: `0 0 8px ${step.color}80`,
+            }} />
+            <div style={{
+              fontSize: 12, fontWeight: 700, color: step.color,
+              fontFamily: "'JetBrains Mono', monospace", marginBottom: 4,
+            }}>
+              {step.label}
+            </div>
+            <div style={{ fontSize: 10, color: '#3A5070' }}>
+              {step.sub}
+            </div>
+          </div>
+          {i < steps.length - 1 && (
+            <div style={{
+              width: 0, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'relative',
+            }}>
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"
+                style={{ position: 'absolute', left: -8, zIndex: 1, background: '#040810', padding: '0 2px' }}>
+                <path d="M0 5 H10 M6 1 L12 5 L6 9" stroke="#2E4060" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Docs() {
   const [activeSection, setActiveSection] = useState('overview');
-  const contentRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    'api-reference':    true,
+    'server-endpoints': true,
+  });
 
+  // Scroll-spy
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        const visible = entries.filter(e => e.isIntersecting);
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible.length > 0) setActiveSection(visible[0].target.id);
       },
-      { rootMargin: '-20% 0px -70% 0px', threshold: 0 }
+      { rootMargin: '-10% 0px -80% 0px', threshold: 0 }
     );
-    SECTIONS.forEach(s => {
-      const el = document.getElementById(s.id);
+    ALL_IDS.forEach(id => {
+      const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
   }, []);
 
+  // Auto-expand parent when child becomes active
+  useEffect(() => {
+    NAV.forEach(item => {
+      if (item.children?.some(c => c.id === activeSection)) {
+        setExpanded(prev => ({ ...prev, [item.id]: true }));
+      }
+    });
+  }, [activeSection]);
+
+  function toggleSection(id: string) {
+    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function isParentActive(item: NavItem) {
+    return activeSection === item.id || (item.children?.some(c => c.id === activeSection) ?? false);
+  }
+
+  function scrollTo(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - 24;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#040810', color: '#E8F2FF' }}>
-      {/* Sidebar */}
+
+      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <nav style={{
-        position: 'fixed', top: 0, left: 0, width: 240, height: '100vh',
-        background: '#070D1C', borderRight: '1px solid #2E3D54',
-        padding: '28px 16px', display: 'flex', flexDirection: 'column',
+        position: 'fixed', top: 0, left: 0, width: 248, height: '100vh',
+        background: '#070D1C', borderRight: '1px solid #1A2C44',
+        display: 'flex', flexDirection: 'column',
         overflowY: 'auto', zIndex: 10,
       }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 36, padding: '0 8px' }}>
-          <img src="/lumos-icon.png" width={32} height={32} alt="Lumos" style={{ borderRadius: 8 }} />
-          <span style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Clash Display', sans-serif", background: 'linear-gradient(135deg, #00D4FF, #7B5FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            LumosSDK
-          </span>
-        </a>
-        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6A7D9A', padding: '0 8px', marginBottom: 8 }}>
-          Documentation
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {SECTIONS.map(s => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              onClick={e => { e.preventDefault(); document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth' }); }}
-              style={{
-                display: 'block', padding: '8px 12px', borderRadius: 8,
-                fontSize: 14, fontWeight: activeSection === s.id ? 600 : 400,
-                color: activeSection === s.id ? '#00D4FF' : '#6A7D9A',
-                background: activeSection === s.id ? 'rgba(0,212,255,0.08)' : 'transparent',
-                borderLeft: `2px solid ${activeSection === s.id ? '#00D4FF' : 'transparent'}`,
-                textDecoration: 'none', transition: 'all 200ms ease-out',
-                paddingLeft: activeSection === s.id ? 10 : 12,
-              }}
-            >
-              {s.label}
-            </a>
-          ))}
+        {/* Logo */}
+        <div style={{ padding: '22px 20px 18px', borderBottom: '1px solid #1A2C44', flexShrink: 0 }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+            <img src="/lumos-icon.png" width={30} height={30} alt="Lumos" style={{ borderRadius: 7 }} />
+            <span style={{
+              fontSize: 17, fontWeight: 700, fontFamily: "'Clash Display', sans-serif",
+              background: 'linear-gradient(135deg, #00D4FF, #7B5FFF)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>
+              LumosSDK
+            </span>
+          </a>
+        </div>
+
+        {/* Nav items */}
+        <div style={{ padding: '14px 12px', flex: 1 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#283848', padding: '0 8px', marginBottom: 10 }}>
+            Documentation
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {NAV.map(item => {
+              const isActive   = activeSection === item.id;
+              const parentHit  = isParentActive(item);
+              const isOpen     = expanded[item.id] ?? false;
+
+              return (
+                <div key={item.id}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <a
+                      href={`#${item.id}`}
+                      onClick={e => { e.preventDefault(); scrollTo(item.id); if (item.children) toggleSection(item.id); }}
+                      style={{
+                        flex: 1, display: 'block',
+                        padding: '7px 10px',
+                        paddingLeft: isActive ? 8 : 10,
+                        borderRadius: 7,
+                        fontSize: 13, fontWeight: parentHit ? 600 : 400,
+                        color: parentHit ? '#00D4FF' : '#4A6080',
+                        background: isActive ? 'rgba(0,212,255,0.07)' : 'transparent',
+                        borderLeft: `2px solid ${isActive ? '#00D4FF' : 'transparent'}`,
+                        textDecoration: 'none', transition: 'all 180ms ease',
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                    {item.children && (
+                      <button
+                        onClick={() => toggleSection(item.id)}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: parentHit ? '#00D4FF' : '#283848',
+                          padding: '4px 6px', fontSize: 9, lineHeight: 1,
+                          transition: 'transform 200ms ease',
+                          transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        ▾
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Sub-items */}
+                  {item.children && isOpen && (
+                    <div style={{
+                      marginLeft: 18, marginBottom: 4,
+                      borderLeft: '1px solid #1A2C44', paddingLeft: 12,
+                    }}>
+                      {item.children.map(child => {
+                        const childActive = activeSection === child.id;
+                        return (
+                          <a
+                            key={child.id}
+                            href={`#${child.id}`}
+                            onClick={e => { e.preventDefault(); scrollTo(child.id); }}
+                            style={{
+                              display: 'block', padding: '5px 8px', borderRadius: 6,
+                              fontSize: 12, fontWeight: childActive ? 600 : 400,
+                              color: childActive ? '#00D4FF' : '#3A5468',
+                              background: childActive ? 'rgba(0,212,255,0.06)' : 'transparent',
+                              textDecoration: 'none', transition: 'all 150ms ease',
+                            }}
+                          >
+                            {child.label}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Nav footer */}
+        <div style={{ padding: '14px 20px', borderTop: '1px solid #1A2C44', flexShrink: 0 }}>
+          <span style={{
+            display: 'inline-block', fontSize: 10, fontWeight: 600, padding: '2px 8px',
+            borderRadius: 20, background: 'rgba(0,212,255,0.08)',
+            color: '#2A5070', border: '1px solid rgba(0,212,255,0.15)',
+          }}>v0.1.0</span>
         </div>
       </nav>
 
-      {/* Content */}
-      <main ref={contentRef} style={{ marginLeft: 240, flex: 1, maxWidth: 800, padding: '48px 56px', margin: '0 auto 0 240px' }}>
+      {/* ── Content ─────────────────────────────────────────────────────── */}
+      <main style={{ marginLeft: 248, flex: 1, display: 'flex', justifyContent: 'center', padding: '0 32px' }}>
+        <div style={{ maxWidth: 760, width: '100%', padding: '56px 0 100px' }}>
 
-        {/* Overview */}
-        <section id="overview" style={{ marginBottom: 64 }}>
-          <H2 id="overview">Overview</H2>
-          <P>LumosSDK is an Android observability SDK for AI-powered apps. It automatically traces every AI conversation — capturing inputs, outputs, tokens, latency, and user feedback — and ships the data to a self-hosted Lumos server. The web portal visualizes trends, errors, and user satisfaction over time.</P>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 20, overflow: 'hidden', borderRadius: 12, border: '1px solid #2E3D54' }}>
-            {['Your App', 'Room Queue', 'WorkManager', 'Lumos Server', 'Portal'].map((step, i, arr) => (
-              <div key={step} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                <div style={{ flex: 1, padding: '14px 12px', background: i % 2 === 0 ? '#0B1628' : '#0F1E38', textAlign: 'center' }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: '#00D4FF', fontFamily: "'JetBrains Mono', monospace" }}>{step}</p>
-                </div>
-                {i < arr.length - 1 && (
-                  <div style={{ color: '#6A7D9A', fontSize: 16, padding: '0 2px', background: i % 2 === 0 ? '#0B1628' : '#0F1E38' }}>→</div>
-                )}
+          {/* ── OVERVIEW ──────────────────────────────────────────────── */}
+          <section id="overview" style={{ marginBottom: 72 }}>
+            <div style={{ textAlign: 'center', paddingBottom: 44 }}>
+              <div style={{
+                display: 'inline-block',
+                background: 'rgba(0,212,255,0.07)', border: '1px solid rgba(0,212,255,0.2)',
+                borderRadius: 20, padding: '4px 14px', fontSize: 11, color: '#00D4FF',
+                fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                fontFamily: "'JetBrains Mono', monospace", marginBottom: 22,
+              }}>
+                Android Observability SDK
               </div>
-            ))}
-          </div>
-        </section>
+              <h1 style={{
+                fontSize: 48, fontWeight: 800, color: '#E8F2FF',
+                margin: '0 0 22px', letterSpacing: '-0.03em', lineHeight: 1.1,
+                fontFamily: "'Clash Display', sans-serif",
+              }}>
+                Overview
+              </h1>
+              <p style={{
+                fontSize: 17, color: '#7A9AB8', lineHeight: 1.8,
+                maxWidth: 580, margin: '0 auto',
+              }}>
+                LumosSDK is an Android observability SDK for AI-powered apps. It automatically traces every
+                AI conversation — capturing inputs, outputs, tokens, latency, and user feedback — and ships
+                the data to a self-hosted Lumos server. The web portal visualizes trends, errors, and user
+                satisfaction over time.
+              </p>
+            </div>
+            <Pipeline />
+          </section>
 
-        {/* Installation */}
-        <section id="installation" style={{ marginBottom: 64 }}>
-          <H2 id="installation">Installation</H2>
-          <P>Add the SDK to your app's Gradle dependencies:</P>
-          <CodeBlock language="kotlin" code={`// build.gradle.kts (app module)
+          {/* ── INSTALLATION ──────────────────────────────────────────── */}
+          <section id="installation" style={{ marginBottom: 64 }}>
+            <SectionH2 id="installation">Installation</SectionH2>
+            <P>Add the SDK to your app's Gradle dependencies:</P>
+            <CodeBlock code={`// build.gradle.kts (app module)
 dependencies {
     implementation("com.lumos:lumos-android:0.1.0")
 }`} />
-          <P>Add the required permission to your <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>AndroidManifest.xml</code>:</P>
-          <CodeBlock language="xml" code={`<uses-permission android:name="android.permission.INTERNET" />`} />
-          <Callout type="tip">The SDK uses WorkManager for background uploads. WorkManager is included transitively — no additional dependency required.</Callout>
-        </section>
+            <P>Add the required permission to your <Mono>AndroidManifest.xml</Mono>:</P>
+            <CodeBlock code={`<uses-permission android:name="android.permission.INTERNET" />`} />
+            <Callout type="tip">
+              The SDK uses WorkManager for background uploads. WorkManager is included transitively — no additional dependency required.
+            </Callout>
+          </section>
 
-        {/* Get Started */}
-        <section id="get-started" style={{ marginBottom: 64 }}>
-          <H2 id="get-started">Get Started</H2>
-          <P>Initialise the SDK in your <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>Application.onCreate()</code>:</P>
-          <CodeBlock code={`class MyApp : Application() {
+          {/* ── GET STARTED ───────────────────────────────────────────── */}
+          <section id="get-started" style={{ marginBottom: 64 }}>
+            <SectionH2 id="get-started">Get Started</SectionH2>
+            <P>Initialise the SDK in your <Mono>Application.onCreate()</Mono>:</P>
+            <CodeBlock code={`class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Lumos.init(this) {
@@ -233,136 +514,126 @@ dependencies {
         }
     }
 }`} />
-          <P>Then trace an AI call:</P>
-          <CodeBlock code={`val trace = Lumos.startTrace("chat")
-trace.input    = userMessage
-trace.output   = aiResponse
-trace.model    = "gpt-4o"
-trace.tokensIn = promptTokens
+            <P>Then trace an AI call:</P>
+            <CodeBlock code={`val trace = Lumos.startTrace("chat")
+trace.input     = userMessage
+trace.output    = aiResponse
+trace.model     = "gpt-4o"
+trace.tokensIn  = promptTokens
 trace.tokensOut = completionTokens
 Lumos.endTrace(trace)`} />
-          <Callout type="warning">Call <code>Lumos.init()</code> before any other Lumos method. Calling <code>startTrace</code> before <code>init</code> will throw an <code>UninitializedPropertyAccessException</code>.</Callout>
-        </section>
+            <Callout type="warning">
+              Call <Mono>Lumos.init()</Mono> before any other Lumos method. Calling <Mono>startTrace</Mono> before <Mono>init</Mono> will throw an <Mono>UninitializedPropertyAccessException</Mono>.
+            </Callout>
+          </section>
 
-        {/* Configuration */}
-        <section id="configuration" style={{ marginBottom: 64 }}>
-          <H2 id="configuration">Configuration</H2>
-          <P>All configuration is done via the DSL block passed to <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>Lumos.init</code>:</P>
-          <ParamTable rows={[
-            { name: 'apiKey', type: 'String', required: true, description: 'API key from the portal (Apps → API Keys). Must start with lk_.' },
-            { name: 'serverUrl', type: 'String', required: true, description: 'Base URL of your Lumos server, e.g. https://lumos.acme.com. No trailing slash.' },
-            { name: 'debug', type: 'Boolean', required: false, description: 'When true, logs trace events to Logcat. Set to BuildConfig.DEBUG in production.' },
-          ]} />
-        </section>
+          {/* ── CONFIGURATION ─────────────────────────────────────────── */}
+          <section id="configuration" style={{ marginBottom: 64 }}>
+            <SectionH2 id="configuration">Configuration</SectionH2>
+            <P>All configuration is done via the DSL block passed to <Mono>Lumos.init</Mono>:</P>
+            <ParamTable rows={[
+              { name: 'apiKey',     type: 'String',  required: true,  description: 'API key from the portal (Apps → API Keys). Must start with lk_.' },
+              { name: 'serverUrl',  type: 'String',  required: true,  description: 'Base URL of your Lumos server, e.g. https://lumos.acme.com. No trailing slash.' },
+              { name: 'debug',      type: 'Boolean', required: false, description: 'When true, logs trace events to Logcat. Set to BuildConfig.DEBUG in production.' },
+            ]} />
+          </section>
 
-        {/* API Reference */}
-        <section id="api-reference" style={{ marginBottom: 64 }}>
-          <H2 id="api-reference">API Reference</H2>
+          {/* ── API REFERENCE ─────────────────────────────────────────── */}
+          <section id="api-reference" style={{ marginBottom: 64 }}>
+            <SectionH2 id="api-reference">API Reference</SectionH2>
+            <P>Complete reference for all public Lumos SDK methods.</P>
 
-          <H3>Lumos.init(context, block)</H3>
-          <P>Initialises the SDK. Must be called once in <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>Application.onCreate()</code> before any other Lumos call.</P>
-          <ParamTable rows={[
-            { name: 'context', type: 'Context', required: true, description: 'Application context.' },
-            { name: 'block', type: 'LumosConfig.() -> Unit', required: true, description: 'Configuration DSL — set apiKey, serverUrl, debug.' },
-          ]} />
+            <H3 id="api-init">Lumos.init(context, block)</H3>
+            <P>Initialises the SDK. Must be called once in <Mono>Application.onCreate()</Mono> before any other Lumos call.</P>
+            <ParamTable rows={[
+              { name: 'context', type: 'Context',              required: true, description: 'Application context.' },
+              { name: 'block',   type: 'LumosConfig.() -> Unit', required: true, description: 'Configuration DSL — set apiKey, serverUrl, debug.' },
+            ]} />
 
-          <H3>Lumos.startTrace(feature): Trace</H3>
-          <P>Creates and returns a new <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>Trace</code> for one AI interaction.</P>
-          <ParamTable rows={[
-            { name: 'feature', type: 'String', required: true, description: 'Name of the AI feature, e.g. "chat", "summarizer". Shown in the portal.' },
-          ]} />
-          <CodeBlock code={`val trace = Lumos.startTrace("chat")`} />
+            <H3 id="api-start-trace">Lumos.startTrace(feature): Trace</H3>
+            <P>Creates and returns a new <Mono>Trace</Mono> for one AI interaction.</P>
+            <ParamTable rows={[
+              { name: 'feature', type: 'String', required: true, description: 'Name of the AI feature, e.g. "chat", "summarizer". Shown in the portal.' },
+            ]} />
+            <CodeBlock code={`val trace = Lumos.startTrace("chat")`} />
 
-          <H3>Trace properties</H3>
-          <P>Set these on the returned Trace before calling <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>endTrace</code>:</P>
-          <ParamTable rows={[
-            { name: 'trace.input', type: 'String?', required: false, description: "The user's input text." },
-            { name: 'trace.output', type: 'String?', required: false, description: "The AI's response text." },
-            { name: 'trace.model', type: 'String?', required: false, description: 'Model identifier, e.g. "gpt-4o", "claude-3-5-sonnet".' },
-            { name: 'trace.tokensIn', type: 'Int?', required: false, description: 'Prompt token count.' },
-            { name: 'trace.tokensOut', type: 'Int?', required: false, description: 'Completion token count.' },
-            { name: 'trace.status', type: 'TraceStatus', required: false, description: 'OK or ERROR. Defaults to OK.' },
-          ]} />
+            <H3 id="api-trace-props">Trace Properties</H3>
+            <P>Set these on the returned <Mono>Trace</Mono> before calling <Mono>endTrace</Mono>:</P>
+            <ParamTable rows={[
+              { name: 'trace.input',     type: 'String?',     required: false, description: "The user's input text." },
+              { name: 'trace.output',    type: 'String?',     required: false, description: "The AI's response text." },
+              { name: 'trace.model',     type: 'String?',     required: false, description: 'Model identifier, e.g. "gpt-4o", "claude-3-5-sonnet".' },
+              { name: 'trace.tokensIn',  type: 'Int?',        required: false, description: 'Prompt token count.' },
+              { name: 'trace.tokensOut', type: 'Int?',        required: false, description: 'Completion token count.' },
+              { name: 'trace.status',    type: 'TraceStatus', required: false, description: 'OK or ERROR. Defaults to OK.' },
+            ]} />
 
-          <H3>Trace.addSpan(name, block): Span</H3>
-          <P>Times a sub-operation within a trace. The block is executed synchronously and the duration is recorded.</P>
-          <CodeBlock code={`val span = trace.addSpan("llm-call") {
-    // timed block
+            <H3 id="api-add-span">Trace.addSpan(name, block): Span</H3>
+            <P>Times a sub-operation within a trace. The block is executed synchronously and the duration is recorded.</P>
+            <CodeBlock code={`val span = trace.addSpan("llm-call") {
+    // timed block — return value becomes span.result
     callYourLLM(input)
 }`} />
 
-          <H3>Lumos.endTrace(trace)</H3>
-          <P>Finalises the trace, queues it in Room, and schedules a background upload via WorkManager. Returns immediately — upload is asynchronous.</P>
+            <H3 id="api-end-trace">Lumos.endTrace(trace)</H3>
+            <P>Finalises the trace, queues it in Room, and schedules a background upload via WorkManager. Returns immediately — upload is asynchronous.</P>
 
-          <H3>Lumos.feedback(traceId, feedback)</H3>
-          <P>Records user feedback for a trace.</P>
-          <CodeBlock code={`Lumos.feedback(trace.id, Feedback.ThumbsUp)
+            <H3 id="api-feedback">Lumos.feedback(traceId, feedback)</H3>
+            <P>Records user feedback for a trace. Call after <Mono>endTrace</Mono>.</P>
+            <CodeBlock code={`Lumos.feedback(trace.id, Feedback.ThumbsUp)
 Lumos.feedback(trace.id, Feedback.ThumbsDown)`} />
 
-          <H3>Lumos.flush()</H3>
-          <P>Suspend function. Forces an immediate upload attempt of all queued events. Useful in tests or before the app exits.</P>
-          <CodeBlock code={`lifecycleScope.launch {
+            <H3 id="api-flush">Lumos.flush()</H3>
+            <P>Suspend function. Forces an immediate upload attempt of all queued events. Useful in tests or before the app exits.</P>
+            <CodeBlock code={`lifecycleScope.launch {
     Lumos.flush()
 }`} />
 
-          <H3>Lumos.setListener(listener)</H3>
-          <P>Attaches a <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>LumosListener</code> to receive upload success/failure callbacks.</P>
-          <CodeBlock code={`Lumos.setListener(object : LumosListener {
+            <H3 id="api-listener">Lumos.setListener(listener)</H3>
+            <P>Attaches a <Mono>LumosListener</Mono> to receive upload success/failure callbacks.</P>
+            <CodeBlock code={`Lumos.setListener(object : LumosListener {
     override fun onUploadSuccess(count: Int) { /* ... */ }
     override fun onUploadFailure(error: Throwable) { /* ... */ }
 })`} />
-        </section>
+          </section>
 
-        {/* Server Endpoints */}
-        <section id="server-endpoints" style={{ marginBottom: 64 }}>
-          <H2 id="server-endpoints">Server Endpoints</H2>
+          {/* ── SERVER ENDPOINTS ──────────────────────────────────────── */}
+          <section id="server-endpoints" style={{ marginBottom: 64 }}>
+            <SectionH2 id="server-endpoints">Server Endpoints</SectionH2>
 
-          <H3>SDK Endpoints</H3>
-          <P>These require the <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>X-Lumos-Key</code> header with a valid API key.</P>
+            <H3 id="sdk-endpoints">SDK Endpoints</H3>
+            <P>These require the <Mono>X-Lumos-Key</Mono> header with a valid API key.</P>
+            {[
+              { method: 'POST', path: '/v0/events',    description: 'Ingest a batch of trace/span/feedback events from the SDK.' },
+              { method: 'GET',  path: '/v0/config',    description: 'Fetch remote SDK configuration for the app.' },
+              { method: 'POST', path: '/v0/demo/chat', description: 'Chat proxy for the demo app via OpenRouter.' },
+            ].map(e => <EndpointRow key={`${e.method}-${e.path}`} {...e} />)}
 
-          {[
-            { method: 'POST', path: '/v0/events', description: 'Ingest a batch of trace/span/feedback events from the SDK.' },
-            { method: 'GET',  path: '/v0/config',  description: 'Fetch remote SDK configuration for the app.' },
-            { method: 'POST', path: '/v0/demo/chat', description: 'Chat proxy for the demo app via OpenRouter.' },
-          ].map(e => (
-            <div key={e.path} style={{ padding: '12px 16px', background: '#0B1628', borderRadius: 10, border: '1px solid #2E3D54', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <EndpointBadge method={e.method} />
-              <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#E8F2FF', fontSize: 13, flex: 1 }}>{e.path}</code>
-              <span style={{ fontSize: 12, color: '#6A7D9A' }}>{e.description}</span>
-            </div>
-          ))}
+            <H3 id="portal-endpoints">Portal Endpoints</H3>
+            <P>These require <Mono>Authorization: Bearer &lt;jwt&gt;</Mono>.</P>
+            {[
+              { method: 'POST',   path: '/api/auth/register',                          description: 'Create a new account.' },
+              { method: 'POST',   path: '/api/auth/login',                             description: 'Authenticate and receive a JWT.' },
+              { method: 'GET',    path: '/api/apps',                                   description: 'List all apps for the account.' },
+              { method: 'POST',   path: '/api/apps',                                   description: 'Create a new app.' },
+              { method: 'PATCH',  path: '/api/apps/:appId',                            description: 'Update app name, packageName, or debug flag.' },
+              { method: 'DELETE', path: '/api/apps/:appId',                            description: 'Delete app and all its data.' },
+              { method: 'GET',    path: '/api/apps/:appId/keys',                       description: 'List API keys for the app.' },
+              { method: 'POST',   path: '/api/apps/:appId/keys',                       description: 'Create a new API key.' },
+              { method: 'DELETE', path: '/api/apps/:appId/keys/:keyId',                description: 'Revoke an API key.' },
+              { method: 'GET',    path: '/api/apps/:appId/traces',                     description: 'List traces with optional filters.' },
+              { method: 'GET',    path: '/api/apps/:appId/traces/:traceId',            description: 'Get full trace detail including spans.' },
+              { method: 'GET',    path: '/api/apps/:appId/stats',                      description: 'Aggregate KPI stats.' },
+              { method: 'GET',    path: '/api/apps/:appId/stats/hourly',               description: 'Hourly call volume for the last 24h.' },
+              { method: 'GET',    path: '/api/apps/:appId/sessions',                   description: 'List sessions grouped by sessionId.' },
+              { method: 'GET',    path: '/api/apps/:appId/sessions/:sessionId/traces', description: 'Get traces for a single session in order.' },
+              { method: 'GET',    path: '/api/account',                                description: 'Get current account info.' },
+              { method: 'PATCH',  path: '/api/account',                                description: 'Update account name or email.' },
+              { method: 'DELETE', path: '/api/account',                                description: 'Delete account and all its data.' },
+            ].map(e => <EndpointRow key={`${e.method}-${e.path}`} {...e} />)}
 
-          <H3>Portal Endpoints</H3>
-          <P>These require <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#00D4FF' }}>Authorization: Bearer &lt;jwt&gt;</code>.</P>
-          {[
-            { method: 'POST',   path: '/api/auth/register',                        description: 'Create a new account.' },
-            { method: 'POST',   path: '/api/auth/login',                           description: 'Authenticate and receive a JWT.' },
-            { method: 'GET',    path: '/api/apps',                                 description: 'List all apps for the account.' },
-            { method: 'POST',   path: '/api/apps',                                 description: 'Create a new app.' },
-            { method: 'PATCH',  path: '/api/apps/:appId',                          description: 'Update app name, packageName, or debug flag.' },
-            { method: 'DELETE', path: '/api/apps/:appId',                          description: 'Delete app and all its data.' },
-            { method: 'GET',    path: '/api/apps/:appId/keys',                     description: 'List API keys for the app.' },
-            { method: 'POST',   path: '/api/apps/:appId/keys',                     description: 'Create a new API key.' },
-            { method: 'DELETE', path: '/api/apps/:appId/keys/:keyId',              description: 'Revoke an API key.' },
-            { method: 'GET',    path: '/api/apps/:appId/traces',                   description: 'List traces with optional filters.' },
-            { method: 'GET',    path: '/api/apps/:appId/traces/:traceId',          description: 'Get full trace detail including spans.' },
-            { method: 'GET',    path: '/api/apps/:appId/stats',                    description: 'Aggregate KPI stats.' },
-            { method: 'GET',    path: '/api/apps/:appId/stats/hourly',             description: 'Hourly call volume for the last 24h.' },
-            { method: 'GET',    path: '/api/apps/:appId/sessions',                 description: 'List sessions grouped by sessionId.' },
-            { method: 'GET',    path: '/api/apps/:appId/sessions/:sessionId/traces', description: 'Get traces for a single session in order.' },
-            { method: 'GET',    path: '/api/account',                              description: 'Get current account info.' },
-            { method: 'PATCH',  path: '/api/account',                              description: 'Update account name or email.' },
-            { method: 'DELETE', path: '/api/account',                              description: 'Delete account and all its data.' },
-          ].map(e => (
-            <div key={e.path} style={{ padding: '10px 16px', background: '#0B1628', borderRadius: 10, border: '1px solid #2E3D54', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <EndpointBadge method={e.method} />
-              <code style={{ fontFamily: "'JetBrains Mono', monospace", color: '#E8F2FF', fontSize: 12, flex: 1, minWidth: 220 }}>{e.path}</code>
-              <span style={{ fontSize: 12, color: '#6A7D9A' }}>{e.description}</span>
-            </div>
-          ))}
-
-          <H3>Example curl</H3>
-          <CodeBlock code={`# Login
+            <H3 id="curl-examples">cURL Examples</H3>
+            <CodeBlock code={`# Login
 curl -X POST https://your-lumos-server.com/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"you@example.com","password":"yourpassword"}'
@@ -370,56 +641,57 @@ curl -X POST https://your-lumos-server.com/api/auth/login \\
 # List sessions
 curl https://your-lumos-server.com/api/apps/APP_ID/sessions \\
   -H "Authorization: Bearer YOUR_JWT"`} />
-        </section>
+          </section>
 
-        {/* Error Codes */}
-        <section id="error-codes" style={{ marginBottom: 64 }}>
-          <H2 id="error-codes">Error Codes</H2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>
-                {['Status', 'Meaning', 'Common cause', 'Fix'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '8px 12px', borderBottom: '1px solid #2E3D54', fontSize: 10, fontWeight: 700, color: '#6A7D9A', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { status: '400', meaning: 'Bad Request', cause: 'Missing required field in request body', fix: 'Check the request body matches the documented schema.' },
-                { status: '401', meaning: 'Unauthorized', cause: 'Missing or invalid API key / JWT', fix: 'Verify the X-Lumos-Key or Authorization header is correct and not expired.' },
-                { status: '403', meaning: 'Forbidden', cause: 'App does not belong to the authenticated account', fix: 'Ensure you are using the correct account JWT for this app.' },
-                { status: '404', meaning: 'Not Found', cause: 'Resource ID does not exist', fix: 'Check that the appId, traceId, or keyId exists in the portal.' },
-                { status: '409', meaning: 'Conflict', cause: 'Duplicate event ID on ingestion', fix: 'The event was already ingested. No action needed — this is handled idempotently.' },
-                { status: '500', meaning: 'Server Error', cause: 'Unexpected failure in the server', fix: 'Check server logs. Ensure JWT_SECRET and OPENROUTER_API_KEY env vars are set.' },
-              ].map(r => (
-                <tr key={r.status} style={{ borderBottom: '1px solid rgba(46,61,84,0.4)' }}>
-                  <td style={{ padding: '10px 12px' }}><code style={{ color: r.status.startsWith('4') || r.status.startsWith('5') ? '#FF4563' : '#00E887', fontFamily: "'JetBrains Mono', monospace" }}>{r.status}</code></td>
-                  <td style={{ padding: '10px 12px', color: '#E8F2FF', fontWeight: 600 }}>{r.meaning}</td>
-                  <td style={{ padding: '10px 12px', color: '#6A7D9A' }}>{r.cause}</td>
-                  <td style={{ padding: '10px 12px', color: '#B8C8DE', lineHeight: 1.5 }}>{r.fix}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+          {/* ── ERROR CODES ───────────────────────────────────────────── */}
+          <section id="error-codes" style={{ marginBottom: 64 }}>
+            <SectionH2 id="error-codes">Error Codes</SectionH2>
+            <div style={{ borderRadius: 10, border: '1px solid #1A2C44', overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: '#0A1628' }}>
+                    {['Status', 'Meaning', 'Common Cause', 'Fix'].map(h => (
+                      <th key={h} style={{
+                        textAlign: 'left', padding: '10px 14px',
+                        borderBottom: '1px solid #1A2C44',
+                        fontSize: 10, fontWeight: 700, color: '#4A6080',
+                        fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em', textTransform: 'uppercase',
+                      }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { status: '400', meaning: 'Bad Request',   cause: 'Missing or malformed request field',        fix: 'Check the request body matches the documented schema.' },
+                    { status: '401', meaning: 'Unauthorized',  cause: 'Missing or invalid API key / JWT',          fix: 'Verify the X-Lumos-Key or Authorization header is correct and not expired.' },
+                    { status: '403', meaning: 'Forbidden',     cause: 'App does not belong to the account',        fix: 'Ensure you are using the correct account JWT for this app.' },
+                    { status: '404', meaning: 'Not Found',     cause: 'Resource ID does not exist',                fix: 'Check that the appId, traceId, or keyId exists in the portal.' },
+                    { status: '409', meaning: 'Conflict',      cause: 'Duplicate event ID on ingestion',           fix: 'The event was already ingested — handled idempotently, no action needed.' },
+                    { status: '500', meaning: 'Server Error',  cause: 'Unexpected failure',                        fix: 'Check server logs. Ensure JWT_SECRET and OPENROUTER_API_KEY env vars are set.' },
+                  ].map((r, i) => (
+                    <tr key={r.status} style={{
+                      background: i % 2 === 0 ? 'transparent' : 'rgba(10,22,40,0.5)',
+                      borderBottom: '1px solid rgba(26,44,68,0.5)',
+                    }}>
+                      <td style={{ padding: '10px 14px' }}>
+                        <code style={{ color: '#FF4563', fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{r.status}</code>
+                      </td>
+                      <td style={{ padding: '10px 14px', color: '#E8F2FF', fontWeight: 600 }}>{r.meaning}</td>
+                      <td style={{ padding: '10px 14px', color: '#4A6080' }}>{r.cause}</td>
+                      <td style={{ padding: '10px 14px', color: '#9AB0C8', lineHeight: 1.55 }}>{r.fix}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-        {/* Examples */}
-        <section id="examples" style={{ marginBottom: 64 }}>
-          <H2 id="examples">Examples</H2>
-          <H3>Full instrumented chat screen</H3>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-            {['Coroutines', 'Callback'].map((tab, i) => (
-              <button key={tab} style={{
-                padding: '6px 14px', borderRadius: '8px 8px 0 0', fontSize: 12, fontWeight: 600,
-                background: i === 0 ? '#0B1628' : 'transparent',
-                border: '1px solid #2E3D54', borderBottom: i === 0 ? '1px solid #0B1628' : '1px solid #2E3D54',
-                color: i === 0 ? '#00D4FF' : '#6A7D9A', cursor: 'pointer',
-              }}>
-                {tab}
-              </button>
-            ))}
-          </div>
-          <CodeBlock code={`class ChatViewModel : ViewModel() {
+          {/* ── EXAMPLES ──────────────────────────────────────────────── */}
+          <section id="examples" style={{ marginBottom: 64 }}>
+            <SectionH2 id="examples">Examples</SectionH2>
+
+            <H3>Full instrumented chat screen</H3>
+            <CodeBlock code={`class ChatViewModel : ViewModel() {
     private var lastTrace: Trace? = null
 
     fun sendMessage(userInput: String, onResult: (String) -> Unit) {
@@ -448,39 +720,76 @@ curl https://your-lumos-server.com/api/apps/APP_ID/sessions \\
     fun thumbsUp()   { lastTrace?.let { Lumos.feedback(it.id, Feedback.ThumbsUp) } }
     fun thumbsDown() { lastTrace?.let { Lumos.feedback(it.id, Feedback.ThumbsDown) } }
 }`} />
-          <Callout type="tip">Store the trace returned by <code>startTrace</code> so you can call <code>Lumos.feedback()</code> after the user reacts.</Callout>
-        </section>
+            <Callout type="tip">
+              Store the trace returned by <Mono>startTrace</Mono> so you can call <Mono>Lumos.feedback()</Mono> after the user reacts.
+            </Callout>
 
-        {/* Changelog */}
-        <section id="changelog" style={{ marginBottom: 64 }}>
-          <H2 id="changelog">Changelog</H2>
-          {[{
-            version: 'v0.1.0',
-            date: '2026-06-01',
-            changes: [
-              'Initial release',
-              'Trace ingestion with nested span support',
-              'Token and latency tracking',
-              'User feedback (ThumbsUp / ThumbsDown)',
-              'WorkManager-based offline-resilient upload queue',
-              'Session tracking via auto-generated sessionId',
-              'Device metadata capture (model, Android version, SDK/app version)',
-            ],
-          }].map(release => (
-            <div key={release.version} style={{ ...{ background: '#0B1628', border: '1px solid #2E3D54', borderRadius: 12 }, padding: '20px 24px', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: '#00D4FF', fontFamily: "'Clash Display', sans-serif" }}>{release.version}</span>
-                <span style={{ fontSize: 12, color: '#6A7D9A', fontFamily: "'JetBrains Mono', monospace" }}>{release.date}</span>
+            <H3>Testing with flush()</H3>
+            <P>Use <Mono>flush()</Mono> in instrumentation tests to block until the SDK has uploaded all queued events before asserting server state.</P>
+            <CodeBlock code={`@Test
+fun tracesAreSentToServer() = runTest {
+    Lumos.init(context) {
+        apiKey    = "lk_test_key"
+        serverUrl = "http://localhost:8080"
+    }
+
+    val trace = Lumos.startTrace("test-feature")
+    trace.input  = "Hello"
+    trace.output = "World"
+    Lumos.endTrace(trace)
+
+    Lumos.flush() // blocks until upload completes
+
+    // now assert your server received the event
+}`} />
+          </section>
+
+          {/* ── CHANGELOG ─────────────────────────────────────────────── */}
+          <section id="changelog" style={{ marginBottom: 64 }}>
+            <SectionH2 id="changelog">Changelog</SectionH2>
+            {[{
+              version: 'v0.1.0',
+              date:    '2026-06-01',
+              tag:     'Initial Release',
+              changes: [
+                'Initial release',
+                'Trace ingestion with nested span support',
+                'Token and latency tracking',
+                'User feedback (ThumbsUp / ThumbsDown)',
+                'WorkManager-based offline-resilient upload queue',
+                'Session tracking via auto-generated sessionId',
+                'Device metadata capture (model, Android version, SDK/app version)',
+              ],
+            }].map(release => (
+              <div key={release.version} style={{
+                background: '#0A1628', border: '1px solid #1A2C44',
+                borderRadius: 12, padding: '20px 24px', marginBottom: 16,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: '#00D4FF', fontFamily: "'Clash Display', sans-serif" }}>
+                    {release.version}
+                  </span>
+                  <span style={{ fontSize: 11, color: '#2A4060', fontFamily: "'JetBrains Mono', monospace" }}>
+                    {release.date}
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, padding: '2px 9px', borderRadius: 20,
+                    background: 'rgba(0,232,135,0.1)', color: '#00E887',
+                    border: '1px solid rgba(0,232,135,0.25)',
+                  }}>
+                    {release.tag}
+                  </span>
+                </div>
+                <ul style={{ paddingLeft: 20, margin: 0 }}>
+                  {release.changes.map(c => (
+                    <li key={c} style={{ fontSize: 13, color: '#7A9AB8', lineHeight: 1.9 }}>{c}</li>
+                  ))}
+                </ul>
               </div>
-              <ul style={{ paddingLeft: 20, margin: 0 }}>
-                {release.changes.map(c => (
-                  <li key={c} style={{ fontSize: 13, color: '#B8C8DE', lineHeight: 1.8 }}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </section>
+            ))}
+          </section>
 
+        </div>
       </main>
     </div>
   );
