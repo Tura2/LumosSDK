@@ -82,9 +82,9 @@ function SessionCard({ session, appId }: { session: SessionSummary; appId: strin
         </span>
 
         <span style={{
-          fontSize: 11, fontWeight: 600, color: T.cyan, fontFamily: T.fontM,
-          background: `rgba(var(--color-cyan-rgb),0.08)`,
-          border: `1px solid rgba(var(--color-cyan-rgb),0.2)`,
+          fontSize: 11, fontWeight: 700, color: T.text, fontFamily: T.fontM,
+          background: `rgba(var(--color-cyan-rgb),0.12)`,
+          border: `1px solid rgba(var(--color-cyan-rgb),0.45)`,
           borderRadius: 6, padding: '2px 8px', flexShrink: 0,
         }}>
           {session.traceCount} {session.traceCount === 1 ? 'trace' : 'traces'}
@@ -145,11 +145,11 @@ function SessionCard({ session, appId }: { session: SessionSummary; appId: strin
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <span style={{
-                fontFamily: T.fontM, fontSize: 11, color: T.cyan,
-                background: `rgba(var(--color-cyan-rgb),0.08)`,
-                border: `1px solid rgba(var(--color-cyan-rgb),0.2)`,
+                fontFamily: T.fontM, fontSize: 11, color: T.text,
+                background: `rgba(var(--color-cyan-rgb),0.12)`,
+                border: `1px solid rgba(var(--color-cyan-rgb),0.45)`,
                 borderRadius: 6, padding: '2px 8px', display: 'inline-block',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap', fontWeight: 600,
               }}>
                 {t.feature}
               </span>

@@ -234,7 +234,7 @@ export default function Dashboard() {
                       strokeWidth={0}
                     >
                       <Cell fill={T.green} />
-                      <Cell fill="rgba(40,20,30,0.9)" />
+                      <Cell fill={T.red} />
                     </Pie>
                     <Tooltip {...tooltipStyle} />
                   </PieChart>
@@ -259,7 +259,7 @@ export default function Dashboard() {
                   <ThumbsUp size={12} strokeWidth={2} />
                   Positive ({thumbsRatio}%)
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: T.muted }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: T.red }}>
                   <ThumbsDown size={12} strokeWidth={2} />
                   Negative ({100 - thumbsRatio}%)
                 </span>

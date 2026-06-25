@@ -27,6 +27,7 @@ object ApiKeys : Table("api_keys") {
     val appId = varchar("app_id", 36).references(Apps.id)
     val name = varchar("name", 100)
     val keyHash = varchar("key_hash", 64).uniqueIndex()
+    val keySuffix = varchar("key_suffix", 10).nullable()
     val createdAt = datetime("created_at")
     val lastUsedAt = datetime("last_used_at").nullable()
     val revokedAt = datetime("revoked_at").nullable()

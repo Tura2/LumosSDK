@@ -14,6 +14,7 @@ import java.util.UUID
 data class KeyDto(
     val id: String, val name: String, val createdAt: String,
     val lastUsedAt: String? = null, val revoked: Boolean,
+    val keySuffix: String? = null,
 )
 
 object KeyService {
@@ -31,6 +32,7 @@ object KeyService {
                 it[ApiKeys.appId] = appId
                 it[ApiKeys.name] = name
                 it[keyHash] = hash(secret)
+                it[keySuffix] = secret.takeLast(4)
                 it[createdAt] = LocalDateTime.now()
             }
         }
@@ -67,6 +69,7 @@ object KeyService {
                 createdAt = row[ApiKeys.createdAt].toString(),
                 lastUsedAt = row[ApiKeys.lastUsedAt]?.toString(),
                 revoked = row[ApiKeys.revokedAt] != null,
+                keySuffix = row[ApiKeys.keySuffix],
             )
         }
     }

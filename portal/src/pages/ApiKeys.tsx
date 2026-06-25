@@ -8,6 +8,7 @@ import PageHeader from '../components/PageHeader';
 interface KeyRow {
   id: string; name: string; createdAt: string;
   lastUsedAt: string | null; revoked: boolean;
+  keySuffix?: string | null;
 }
 
 function relativeTime(iso: string): string {
@@ -257,7 +258,9 @@ export default function ApiKeys() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {keys.map(k => {
           const accentColor = k.revoked ? 'rgba(255,69,99,0.55)' : 'rgba(0,232,135,0.55)';
-          const prefix = k.id.length > 14 ? `${k.id.slice(0, 14)}…` : k.id;
+          const maskedKey = k.keySuffix
+            ? `lms_${'•'.repeat(16)}${k.keySuffix}`
+            : `lms_${'•'.repeat(18)}`;
 
           return (
             <div key={k.id} style={{
@@ -284,11 +287,11 @@ export default function ApiKeys() {
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                   <code style={{
-                    fontSize: 11, color: T.muted, fontFamily: T.fontM,
+                    fontSize: 11, color: T.text, fontFamily: T.fontM,
                     background: 'rgba(255,255,255,0.04)', border: '1px solid var(--color-border)',
-                    borderRadius: 5, padding: '1px 7px',
+                    borderRadius: 5, padding: '2px 9px', letterSpacing: '0.04em',
                   }}>
-                    {prefix}
+                    {maskedKey}
                   </code>
                   <span style={{ color: T.muted, fontSize: 11 }}>·</span>
                   <span style={{ fontSize: 11, color: T.muted }}>

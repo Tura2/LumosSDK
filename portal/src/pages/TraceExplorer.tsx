@@ -46,9 +46,9 @@ function TimeRangeSelector({ value, onChange }: { value: string; onChange: (k: s
         }}
       >
         <span style={{
-          background: 'rgba(var(--color-cyan-rgb),0.12)', border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
+          background: 'rgba(var(--color-cyan-rgb),0.12)', border: '1px solid rgba(var(--color-cyan-rgb),0.45)',
           borderRadius: 6, padding: '2px 8px',
-          fontSize: 11, color: T.cyan, fontWeight: 700, fontFamily: T.fontM,
+          fontSize: 11, color: T.text, fontWeight: 700, fontFamily: T.fontM,
         }}>
           {current.key}
         </span>
@@ -380,11 +380,11 @@ export default function TraceExplorer() {
               >
                 <span style={{
                   fontFamily: T.fontM, fontSize: 11,
-                  background: 'rgba(var(--color-cyan-rgb),0.08)',
-                  border: '1px solid rgba(var(--color-cyan-rgb),0.2)',
+                  background: 'rgba(var(--color-cyan-rgb),0.12)',
+                  border: '1px solid rgba(var(--color-cyan-rgb),0.45)',
                   borderRadius: 6, padding: '3px 8px',
-                  color: T.cyan, display: 'inline-block',
-                  whiteSpace: 'nowrap',
+                  color: T.text, display: 'inline-block',
+                  whiteSpace: 'nowrap', fontWeight: 600,
                 }}>
                   {t.feature}
                 </span>
