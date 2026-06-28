@@ -26,3 +26,6 @@ portal/.vite/
 # Allow app icon assets
 !portal/public/lumos-icon.png
 !demo-app/app/src/main/res/drawable/ic_lumos.png
+
+# HeyGen HyperFrames video project
+heygen/
