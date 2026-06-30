@@ -32,3 +32,6 @@ heygen/
 
 # DB efficiency study
 docs/db-efficiency-study.html
+
+# Local SQLite database
+server/lumos.db
