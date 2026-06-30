@@ -29,3 +29,6 @@ portal/.vite/
 
 # HeyGen HyperFrames video project
 heygen/
+
+# DB efficiency study
+docs/db-efficiency-study.html
